@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BIMS"
         mc:Ignorable="d"
-        Title="Load from a extend file." Height="363.382" Width="515.735">
+        Title="Load from a extend file." Height="150" Width="350">
     <Grid>
-        <Button Name="LoadFromAExtendFile" Height="30" Width="150" Content="Load from a extend file..." Click="LoadFromAExtendFile_Click">
+        <Button Name="LoadFromAExtendFile" Height="50" Width="175" Content="Load from a extend file..." Click="LoadFromAExtendFile_Click">
 
         </Button>
     </Grid>

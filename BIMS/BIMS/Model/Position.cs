@@ -9,7 +9,7 @@ namespace BIMS.Model
 {
     class Position
     {
-        private int _Position_Id;
+        private int    _Position_Id;
         private string _Name;
         private string _Latitute;
         private string _Longitute;
@@ -23,10 +23,8 @@ namespace BIMS.Model
             Latitute = latitute;
             Longitute = longitute;
         }
-
         #region properties
-        [AutoIncrement]
-        [Required]
+        [AutoIncrement, PrimaryKey, Required]
         public int Potition_Id
         {
             get
@@ -38,9 +36,7 @@ namespace BIMS.Model
                 _Position_Id = value;
             }
         }
-        [Required]
-        [Unique]
-        [ExcelColumn("G")]
+        [Required, Unique, ExcelColumn("G")]
         public string Name
         {
             get
@@ -65,7 +61,6 @@ namespace BIMS.Model
                 _Latitute = value;
             }
         }
-
         [Required]
         public string Longitute
         {

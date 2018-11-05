@@ -7,6 +7,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using static BIMS.Attributes.AutoIncrementAttribute;
 using static BIMS.Attributes.UniqueAttribute;
 using static BIMS.Attributes.ExcelColumnAttribute;
+using static BIMS.Attributes.ForeignKeyAttribute;
 using BIMS.Attributes;
 using System.Reflection;
 
@@ -14,6 +15,9 @@ namespace BIMS.Utilities
 {
     class ExcelReader
     {
+        private Excel.Application xlApplication = null;
+        private Excel.Worksheet xlworkSheet = null;
+        private Excel.Workbook xlWorkBook = null;
         private static ExcelReader excelReader = null;
 
         private ExcelReader()
@@ -52,6 +56,7 @@ namespace BIMS.Utilities
             List<string> properties = RequiredAttribute.GetRequiredProperties(typeof(T));
             if (properties.Count == 0)
             {
+                throw new Exception("Dont have any required property.");
                 return null;
             }
             // a mapping the name of a property and a name of column in a excel file.
@@ -65,14 +70,16 @@ namespace BIMS.Utilities
             // the list of properties what will be increated automaticlly.
             List<string> autoIncreateProperties = GetAutoIncrementProperties(typeof(T));
 
-            Excel.Application xlApplication = new Excel.Application();
-            Excel.Workbook xlWorkBook = null;
+            xlApplication = new Excel.Application();
             xlApplication.Visible = false;
             xlApplication.DisplayAlerts = false;
+
             xlWorkBook = xlApplication.Workbooks.Open(url);
-            Excel.Worksheet xlworkSheet = null;
+
             xlworkSheet = (Excel.Worksheet)xlWorkBook.Sheets[1];
             xlworkSheet.Unprotect();
+
+
             int id = 1;
             int startIndex = 5;
             Excel.Range xlRange = xlworkSheet.UsedRange;
@@ -95,32 +102,57 @@ namespace BIMS.Utilities
                         // read position in excel
                         if (columnMap.ContainsKey(property))
                         {
+                        
                             string rowName = null;
-                            if (columnMap.TryGetValue(property, out rowName))
+                            string returnedValue = GetValueFromARow(columnMap, i, property, out rowName);
+                            key = returnedValue;
+                            if (string.IsNullOrWhiteSpace(returnedValue))
                             {
-                                string s = xlworkSheet.Cells[i, rowName];
-                                propertyInfo.SetValue(x, s);
-                                key = s;
+                                string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", i, rowName, "Ignore", "Can't get value on this cell.");
+                                LoggingHelper.WriteDown(message);
+                                break;
                             }
                             else
                             {
-                                throw new Exception("Cant get the name of row: " + property);
+                                propertyInfo.SetValue(x, returnedValue);
                             }
                         }
                         else
                         {
+                            xlWorkBook.Close();
+                            xlApplication.Quit();
                             throw new Exception("Can't get data from the excel file: " + property);
                         }
+                    }
+                    else if (IsForeignKey(typeof(T), property))// get the id  from server sql.
+                    {
+                        KeyValuePair<string,string> pairRefInfo = GetReferences(typeof(T), property);
+                        if (pairRefInfo.Equals(default(KeyValuePair<string, string>)))
+                        {
+                            throw new Exception("Don't have any information what references a foreign key");
+                        }
+                        else
+                        {
+                            string columnName = null;
+                            string refTableName = pairRefInfo.Key;
+                            string refPropertyName = pairRefInfo.Value;
+                            string mappingProperty = GetMappingProperty(typeof(T), property);
+                            string conditionString = GetValueFromARow(columnMap, i, property, out columnName);
+
+                            // get the key in the database.
+                            LoggingHelper.WriteDown("");
+                        }
+                        //　get the table and property what referenced to.
                     }
                     else
                     {
                         if (columnMap.ContainsKey(property)) // if this property has value will get from in Excel file.
                         {
-                            string rowName = null;
-                            if (columnMap.TryGetValue(property, out rowName))
+                            string columnName = null;
+                            string returnedValue = GetValueFromARow(columnMap, i, property,out columnName);
+                            if (!string.IsNullOrWhiteSpace(returnedValue))
                             {
-                                string s = xlworkSheet.Cells[i, rowName];
-                                propertyInfo.SetValue(x, s);
+                                propertyInfo.SetValue(x, returnedValue);
                             }
                             else
                             {
@@ -133,18 +165,47 @@ namespace BIMS.Utilities
                         }
                     }
                 }
-
+                // if the key has not setted any value then ignore it.
                 if (string.IsNullOrWhiteSpace(key))
                 {
-                    new Exception("Key is null : " + key);
+                    //
+                    continue;
                 }
                 else
                 {
-                    dicResult.Add(key, x);
+                    if (!dicResult.ContainsKey(key))
+                    {
+                        dicResult.Add(key, x);
+                    }
                 }
             }
+            
+            // close the excel app.
+            xlWorkBook.Close();
+            xlApplication.Quit();
             return dicResult;
         }
+        private string GetValueFromARow(Dictionary<string, string> columnMap, int row,string property, out string columnName)
+        {
+            if (columnMap.TryGetValue(property, out columnName))
+            {
+                string s = null;
+                try
+                {
+                    Excel.Range cell = xlworkSheet.Cells[row, columnName];
+                    if (cell.Value != null)
+                    {
+                        s = xlworkSheet.Cells[row, columnName].Value.ToString();
+                        return s;
+                    }
+                }
+                catch(Exception)
+                {
+                    return null;
+                }
+            }
+            return null;
+        } 
 
     }
 }

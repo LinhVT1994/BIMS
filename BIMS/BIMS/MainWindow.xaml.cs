@@ -32,10 +32,9 @@ namespace BIMS
         {
             Position position = new Position();
             Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
-
             string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
             ExcelReader reader = ExcelReader.GetInstance();
-            reader.Read<Position>(url);
+            Dictionary<string,Cement> positions = reader.Read<Cement>(url);
             // reader.Read(url);
         }
     }

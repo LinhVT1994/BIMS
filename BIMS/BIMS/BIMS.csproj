@@ -57,11 +57,17 @@
     </ApplicationDefinition>
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
     <Compile Include="Attributes\ExcelColumnAttribute.cs" />
+    <Compile Include="Attributes\ForeignKeyAttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="Attributes\RequiredAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
+    <Compile Include="Model\Cement.cs" />
+    <Compile Include="Model\Construcion.cs" />
     <Compile Include="Model\DynamicDictionary.cs" />
     <Compile Include="Model\Position.cs" />
+    <Compile Include="Utilities\SqlDataAccess.cs" />
     <Compile Include="Utilities\ExcelReader.cs" />
+    <Compile Include="Utilities\LoggingHelper.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -102,7 +108,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="SQLCode\BoringDatabaseCode.sql" />
+    <Content Include="SQLCode\DataSample.sql" />
+    <Content Include="SQLCode\QueriesTest.sql" />
+  </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">
       <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
