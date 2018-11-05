@@ -1,4 +1,7 @@
-﻿using System;
+﻿using BIMS.Attributes;
+using BIMS.Model;
+using BIMS.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +26,17 @@ namespace BIMS
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
+        {
+            Position position = new Position();
+            Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
+
+            string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+            ExcelReader reader = ExcelReader.GetInstance();
+            reader.Read<Position>(url);
+            // reader.Read(url);
         }
     }
 }
