@@ -5,8 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BIMS"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="363.382" Width="515.735">
     <Grid>
-        
+        <ListView x:Name="listView" Margin="10,10,10,52">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="Get_Data" Content="Button" Margin="441,285,10,20" RenderTransformOrigin="0.437,0.207"/>
     </Grid>
 </Window>
