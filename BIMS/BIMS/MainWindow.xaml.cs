@@ -15,6 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Data.SqlClient;
+using Npgsql;
+using System.Diagnostics;
 
 namespace BIMS
 {
@@ -23,6 +26,8 @@ namespace BIMS
     /// </summary>
     public partial class MainWindow : Window
     {
+        private SqlParameter param;
+        TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
         public MainWindow()
         {
             InitializeComponent();
@@ -30,12 +35,31 @@ namespace BIMS
 
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
+            Debug.Listeners.Add(listener);
+            SqlDataAccess sql = new SqlDataAccess();
+            param = new SqlParameter("@cement_id", 2);
+            SqlParameter[] para = new SqlParameter[1];
+            para[0] = param;
+            DataTable reader = sql.ExecuteSelectQuery("select * from cement where cement_id = @cement_id", para);
+            for (int i = 0; i < reader.Count; i++)
+            {
+                Debug.WriteLine(reader.GetElementAt(i).Value("cement_id").ToString());
+                Debug.WriteLine(reader.GetElementAt(i).Value("name").ToString());
+                Debug.WriteLine(reader.GetElementAt(i).Value("symbol").ToString());
+            }
+            Debug.Flush();
+            return;
+            /*
             Position position = new Position();
             Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
             string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
             ExcelReader reader = ExcelReader.GetInstance();
-            Dictionary<string,Cement> positions = reader.Read<Cement>(url);
+            Dictionary<string,Position> positions = reader.Read<Position>(url);
             // reader.Read(url);
+            */
         }
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool AllocConsole();
+
     }
 }
