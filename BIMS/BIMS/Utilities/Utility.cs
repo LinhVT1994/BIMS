@@ -7,13 +7,21 @@ using System.Threading.Tasks;
 
 namespace BIMS.Utilities
 {
-    class Unility
+    /**
+    * Utility class contains methods what is usually used.
+    * 
+    *
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
+    class Utility
     {
         private static Stopwatch watch = null;
         private static string message = null;
         public static void StartCountingTime(string message)
         {
-            Unility.message = message;
+            Utility.message = message;
             if (watch == null)
             {
                 watch = System.Diagnostics.Stopwatch.StartNew();
@@ -29,7 +37,7 @@ namespace BIMS.Utilities
             if (watch.IsRunning)
             {
                 var elapsedMs = watch.ElapsedMilliseconds;
-                Debug.WriteLine("   Message: " + Unility.message+", Time to run: " + elapsedMs);
+                Debug.WriteLine("   Message: " + Utility.message+", Time to run: " + elapsedMs);
                 watch.Stop();
             }
         }

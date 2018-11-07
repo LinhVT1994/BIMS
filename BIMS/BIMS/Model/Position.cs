@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace BIMS.Model
 {
+    /**
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
     class Position
     {
         private int    _Position_Id;

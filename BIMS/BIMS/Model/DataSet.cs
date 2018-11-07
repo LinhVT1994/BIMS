@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace BIMS.Model
 {
+    /**
+    * This DataSet class to support for parse data from a reader object in Postgresql.
+    * 
+    *
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
     class DataSet
     {
         private Dictionary<string, string> dictionary = null;

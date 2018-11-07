@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 
 namespace BIMS.Model
 {
+    /**
+    * A Construcion object what contains infomation relate to the construction.
+    * 
+    *
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
     class Construcion
     {
         private int      _Construction_Id;

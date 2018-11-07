@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 using BIMS.Attributes;
 namespace BIMS.Model
 {
+    /**
+    * A Cement object what contains infomation relate to the cement.
+    * 
+    *
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
     class Cement
     {
         private int    _Cement_Id;

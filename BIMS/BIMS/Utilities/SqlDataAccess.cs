@@ -39,7 +39,7 @@ namespace BIMS.Utilities
         public DataTable ExecuteSelectQuery(string query, SqlParameter[] parameters)
         {
 #if DEBUG
-            Unility.StartCountingTime("ExecuteSelectQuery");
+            Utility.StartCountingTime("ExecuteSelectQuery");
 #endif
 
             using (_NpgsqlConnection = new NpgsqlConnection(_ConnectionString))// connect to the database.
@@ -62,7 +62,7 @@ namespace BIMS.Utilities
                     DataTable dataTable = new DataTable();
                     dataTable.Fill(dataReader);
 #if DEBUG
-                    Unility.StopCountingTime();
+                    Utility.StopCountingTime();
 #endif
                     return dataTable;
                 }

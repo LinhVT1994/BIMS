@@ -13,21 +13,29 @@ using System.Reflection;
 
 namespace BIMS.Utilities
 {
-    class ExcelReader
+    /**
+    * A ExcelReader object what contains methods to read data from an excel file;
+    * 
+    *
+    * @author  LinhVT
+    * @version 1.0
+    * @since   2018/11/6
+    */
+    class ExcelDataAccess
     {
         private Excel.Application xlApplication = null;
         private Excel.Worksheet xlworkSheet = null;
         private Excel.Workbook xlWorkBook = null;
-        private static ExcelReader excelReader = null;
+        private static ExcelDataAccess excelReader = null;
 
-        private ExcelReader()
+        private ExcelDataAccess()
         {
         }
-        public static ExcelReader GetInstance()
+        public static ExcelDataAccess GetInstance()
         {
             if (excelReader == null)
             {
-                excelReader = new ExcelReader();
+                excelReader = new ExcelDataAccess();
             }
             return excelReader;
         }

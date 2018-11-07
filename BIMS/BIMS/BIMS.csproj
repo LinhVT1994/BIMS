@@ -80,14 +80,18 @@
     <Compile Include="Attributes\UniqueAttribute.cs" />
     <Compile Include="Model\Cement.cs" />
     <Compile Include="Model\Construcion.cs" />
+    <Compile Include="Model\ConstructionExecuting.cs" />
     <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\DataTable.cs" />
     <Compile Include="Model\DynamicDictionary.cs" />
+    <Compile Include="Model\MixingResult.cs" />
     <Compile Include="Model\Position.cs" />
+    <Compile Include="Model\QualityTesting.cs" />
+    <Compile Include="Model\TestingSample.cs" />
     <Compile Include="Utilities\SqlDataAccess.cs" />
-    <Compile Include="Utilities\ExcelReader.cs" />
+    <Compile Include="Utilities\ExcelDataAccess.cs" />
     <Compile Include="Utilities\LoggingHelper.cs" />
-    <Compile Include="Utilities\Unility.cs" />
+    <Compile Include="Utilities\Utility.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
