@@ -71,23 +71,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Attributes\AttributeUtilities.cs" />
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
     <Compile Include="Attributes\ExcelColumnAttribute.cs" />
     <Compile Include="Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="Attributes\RequiredAttribute.cs" />
-    <Compile Include="Attributes\SqlQuerySampleAttribute.cs" />
+    <Compile Include="Attributes\SqlParameterAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
     <Compile Include="Model\Cement.cs" />
     <Compile Include="Model\Construcion.cs" />
     <Compile Include="Model\ConstructionExecuting.cs" />
     <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\DataTable.cs" />
-    <Compile Include="Model\DynamicDictionary.cs" />
+    <Compile Include="Model\Element.cs" />
     <Compile Include="Model\MixingResult.cs" />
     <Compile Include="Model\Position.cs" />
     <Compile Include="Model\QualityTesting.cs" />
     <Compile Include="Model\TestingSample.cs" />
+    <Compile Include="Utilities\ExcelToSqlManipulation.cs" />
     <Compile Include="Utilities\SqlDataAccess.cs" />
     <Compile Include="Utilities\ExcelDataAccess.cs" />
     <Compile Include="Utilities\LoggingHelper.cs" />

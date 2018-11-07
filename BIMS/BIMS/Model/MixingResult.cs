@@ -22,7 +22,7 @@ namespace BIMS.Model
         private Cement _Cement;
         private TestingSample _TestingSample;
 
-        [PrimaryKey, AutoIncrement]
+        [Required,PrimaryKey, AutoIncrement, SqlParameter("mixing_result_id")]
         public int MixingResultId
         {
             get
@@ -34,7 +34,7 @@ namespace BIMS.Model
                 _MixingResultId = value;
             }
         }
-        [Required, ExcelColumn("U")]
+        [Required, ExcelColumn("U"), SqlParameter("cement_amount")]
         public double Cement_Amount
         {
             get
@@ -46,7 +46,7 @@ namespace BIMS.Model
                 _Cement_Amount = value;
             }
         }
-        [Required, ExcelColumn("V")]
+        [Required, ExcelColumn("V"), SqlParameter("archived_strength")]
         public double Archived_Strength
         {
             get
@@ -58,7 +58,7 @@ namespace BIMS.Model
                 _Archived_Strength = value;
             }
         }
-        [Required, ExcelColumn("T")]
+        [Required, ExcelColumn("T"), SqlParameter("water_content_ratio")]
         public double Water_Content_Ratio
         {
             get
@@ -70,7 +70,7 @@ namespace BIMS.Model
                 _Water_Content_Ratio = value;
             }
         }
-        [Required]
+        [Required, SqlParameter("wet_density")]
         public double Wet_Density
         {
             get
@@ -82,7 +82,7 @@ namespace BIMS.Model
                 _Wet_Density = value;
             }
         }
-        [Required, ExcelColumn("I"), ForeignKey("cement", "cement_id", "name")]
+        [Required, SqlParameter("cement_id")]
         public Cement Cement
         {
             get
@@ -95,7 +95,7 @@ namespace BIMS.Model
             }
 
         }
-        [Required, ExcelColumn("G"), ForeignKey("position", "position_id", "name")]
+        [Required, ExcelColumn("G"), SqlParameter("testing_sample_id")]
         public TestingSample TestingSample
         {
             get

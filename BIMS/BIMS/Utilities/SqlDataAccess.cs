@@ -35,7 +35,6 @@ namespace BIMS.Utilities
         /// <param name="parameters">A list of parameters, uses the query want to query.</param>
         /// <returns>A data reader object.</returns>
         
-        [SqlQuerySampleAttribute("select * from cement where cement_id = @cement_id", "cement_id = 1")]
         public DataTable ExecuteSelectQuery(string query, SqlParameter[] parameters)
         {
 #if DEBUG

@@ -14,7 +14,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/6
     */
-    class Cement
+    class Cement : Element
     {
         private int    _Cement_Id;
         private string _Symbol;
@@ -25,7 +25,7 @@ namespace BIMS.Model
             Symbol = null;
             Name = null;
         }
-        [AutoIncrement, Required]
+        [Required,AutoIncrement, SqlParameter("cement_id")]
         public int Cement_Id
         {
             get
@@ -37,7 +37,7 @@ namespace BIMS.Model
                 _Cement_Id = value;
             }
         }
-        [Required, Unique, ExcelColumn("I")]
+        [Required, Unique, ExcelColumn("I"), SqlParameter("symbol")]
         public string Symbol
         {
             get
@@ -49,6 +49,7 @@ namespace BIMS.Model
                 _Symbol = value;
             }
         }
+        [Required, SqlParameter("name")]
         public string Name
         {
             get

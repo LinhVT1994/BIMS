@@ -26,7 +26,7 @@ namespace BIMS.Model
         {
 
         }
-        [AutoIncrement, PrimaryKey, Required]
+        [Required, AutoIncrement, PrimaryKey, SqlParameter("construcion_id")]
         public　int Construction_Id
         {
             get
@@ -38,7 +38,7 @@ namespace BIMS.Model
                 _Construction_Id = value;
             }
         }
-        [Required, Unique, ExcelColumn("E")]
+        [Required, Unique, ExcelColumn("E"), SqlParameter("construcion_no")]
         public string Construction_No
         {
             get
@@ -50,7 +50,7 @@ namespace BIMS.Model
                 _Construction_No = value;
             }
         }
-        [Required, ExcelColumn("F")]
+        [Required, ExcelColumn("F"), SqlParameter("name")]
         public string Name
         {
             get
@@ -62,7 +62,7 @@ namespace BIMS.Model
                 _Name = value;
             }
         }
-        [Required, ExcelColumn("G"), ForeignKey("position", "position_id","name")]
+        [Required, ExcelColumn("G"), ForeignKey("position", "name[F]=>position_id"), SqlParameter("position_id")]
         public Position Position {
             get
             {

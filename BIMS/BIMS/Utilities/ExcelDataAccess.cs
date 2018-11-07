@@ -10,6 +10,7 @@ using static BIMS.Attributes.ExcelColumnAttribute;
 using static BIMS.Attributes.ForeignKeyAttribute;
 using BIMS.Attributes;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace BIMS.Utilities
 {
@@ -134,22 +135,10 @@ namespace BIMS.Utilities
                     }
                     else if (IsForeignKey(typeof(T), property))// get the id  from server sql.
                     {
-                        KeyValuePair<string,string> pairRefInfo = GetReferences(typeof(T), property);
-                        if (pairRefInfo.Equals(default(KeyValuePair<string, string>)))
-                        {
-                            throw new Exception("Don't have any information what references a foreign key");
-                        }
-                        else
-                        {
-                            string columnName = null;
-                            string refTableName = pairRefInfo.Key;
-                            string refPropertyName = pairRefInfo.Value;
-                            string mappingProperty = GetMappingProperty(typeof(T), property);
-                            string conditionString = GetValueFromARow(columnMap, i, property, out columnName);
-
-                            // get the key in the database.
-                            LoggingHelper.WriteDown("");
-                        }
+                        Dictionary<string,string> excelColumnMapping=  GetExcelColumnReferences(typeof(T), property);
+                        string table= GetRefTable(typeof(T), property);
+                        string foreignKey = GetRefId(typeof(T), property);
+                        Debug.WriteLine(string.Format("{0}  {1}  {2}", table, foreignKey, excelColumnMapping.ToString()));
                         //　get the table and property what referenced to.
                     }
                     else

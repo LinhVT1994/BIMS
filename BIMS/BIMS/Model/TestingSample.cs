@@ -22,7 +22,7 @@ namespace BIMS.Model
         private double _TagetStrength;
         private Construcion _Construction;
 
-        [Required, PrimaryKey, AutoIncrement]
+        [Required, PrimaryKey, AutoIncrement, SqlParameter("testing_sample_id")]
         public int TestingSampleId
         {
             get
@@ -34,7 +34,7 @@ namespace BIMS.Model
                 _TestingSampleId = value;
             }
         }
-        [Required,ExcelColumn("H")]
+        [Required,ExcelColumn("H"), SqlParameter("name")]
         public string Name
         {
             get
@@ -46,7 +46,7 @@ namespace BIMS.Model
                 _Name = value;
             }
         }
-        [Required, ExcelColumn("R")]
+        [Required, ExcelColumn("R"), SqlParameter("natural_water_content_ratio")]
         public double NaturalWaterContentRatio
         {
             get
@@ -58,7 +58,7 @@ namespace BIMS.Model
                 _NaturalWaterContentRatio = value;
             }
         }
-        [Required, ExcelColumn("S")]
+        [Required, ExcelColumn("S"), SqlParameter("natural_wet_density")]
         public double NaturalWetDensity
         {
             get
@@ -70,7 +70,7 @@ namespace BIMS.Model
                 _NaturalWetDensity = value;
             }
         }
-        [Required, ExcelColumn("M")]
+        [Required, ExcelColumn("M"), SqlParameter("color")]
         public string Color
         {
             get
@@ -82,7 +82,7 @@ namespace BIMS.Model
                 _Color = value;
             }
         }
-        [Required, ExcelColumn("O")]
+        [Required, ExcelColumn("O"), SqlParameter("description")]
         public string Description
         {
             get
@@ -94,7 +94,7 @@ namespace BIMS.Model
                 _Description = value;
             }
         }
-        [Required, ExcelColumn("J")]
+        [Required, ExcelColumn("J"), SqlParameter("target_strength")]
         public double TagetStrength
         {
             get
@@ -107,7 +107,7 @@ namespace BIMS.Model
             }
         }
 
-        [Required, ExcelColumn("E"), ForeignKey("construction", "construction_id", "construction_no")]
+        [Required, ExcelColumn("E"), SqlParameter("construcion_id")]
         public Construcion Construction
         {
             get

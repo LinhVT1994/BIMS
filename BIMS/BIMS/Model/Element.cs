@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace BIMS.Model
 {
 
-    class DynamicDictionary : DynamicObject
+    class Element : DynamicObject
     {
         // The inner dictionary.
         Dictionary<string, object> dictionary

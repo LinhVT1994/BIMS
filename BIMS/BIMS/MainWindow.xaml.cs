@@ -1,4 +1,4 @@
-﻿#define TESTING
+﻿#define FORTESTING
 using BIMS.Attributes;
 using BIMS.Model;
 using BIMS.Utilities;
@@ -36,31 +36,30 @@ namespace BIMS
 
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-
-
-
-
+            ExcelToSqlManipulation.Execute<Construcion>();
             #region Code statements for testing.
-            MessageBox.Show("Nothing to display.", "Infomation");
+
 #if (DEBUG && TESTTED)
             TestSQLCommand();
+             MessageBox.Show("Nothing to display.", "Infomation");
 #endif
 
 #if (DEBUG && TESTTED)
-                TestExcelAccess();
+            TestExcelAccess();
+
 #endif
             #endregion
         }
 
-
-        #region Methods for tesing
+        #region Methods for testing
         private void TestExcelAccess()
         {
+        
            Position position = new Position();
            Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
            string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
            ExcelDataAccess reader = ExcelDataAccess.GetInstance();
-           Dictionary<string,Position> positions = reader.Read<Position>(url);
+           Dictionary<string,Construcion> positions = reader.Read<Construcion>(url);
            // reader.Read(url);
         }
 
@@ -95,7 +94,5 @@ namespace BIMS
             return;
         }
         #endregion
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern bool AllocConsole();
     }
 }

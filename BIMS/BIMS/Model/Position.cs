@@ -29,7 +29,7 @@ namespace BIMS.Model
             Longitute = longitute;
         }
         #region properties
-        [AutoIncrement, PrimaryKey, Required]
+        [Required, AutoIncrement, PrimaryKey]
         public int Potition_Id
         {
             get

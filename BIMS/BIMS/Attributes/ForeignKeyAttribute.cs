@@ -7,18 +7,34 @@ using System.Threading.Tasks;
 
 namespace BIMS.Attributes
 {
-     [AttributeUsage(AttributeTargets.Property)]
     class ForeignKeyAttribute : Attribute
     {
-        private readonly string _ReferenceTable;
-        private readonly string _ReferenceProperty;
-        private readonly string _MappingProperty;
-        public ForeignKeyAttribute(string refTable, string nameOfRefProperty, string mappingProperty)
+        private Dictionary<string, string> _MappingWithExcelColumn = null;
+        private string _RefId = null;
+        private string _RefTableName = null;
+        public ForeignKeyAttribute(string refTable, string mappingOperator)
         {
-            _ReferenceTable = refTable;
-            _ReferenceProperty = nameOfRefProperty;
-            _MappingProperty = mappingProperty;
+            _MappingWithExcelColumn = new Dictionary<string, string>();
+            string[] array =  mappingOperator.Split(new string[] { "=>" }, StringSplitOptions.None);
+
+            if (array == null || array.Length!=2)
+            {
+                throw new Exception("Is not a correct syntax."+ mappingOperator);
+            }
+            string mappingKeys = array[0];
+            foreach (var key in mappingKeys.Split(','))
+            {
+                 var pair = Parse(key);
+                if (!pair.Equals(default(KeyValuePair<string, string>)))
+                {
+                    _MappingWithExcelColumn.Add(pair.Key,pair.Value);
+                }
+            }
+            _RefId = array[1];
+            _RefTableName = refTable;
+
         }
+
         public static List<string> GetForeignKeyProperties(Type type)
         {
             PropertyInfo[] properties = type.GetProperties();
@@ -38,28 +54,21 @@ namespace BIMS.Attributes
             List<string> requiredProperties = GetForeignKeyProperties(type);
             return requiredProperties.Contains(name);
         }
-        public string MappingProperty
+        public Dictionary<string,string> MappingWithExcelColumn
         {
             get
             {
-                return _MappingProperty;
+                return _MappingWithExcelColumn;
             }
         }
-        public string ReferenceTable
+        public string RefId
         {
             get
             {
-                return _ReferenceTable;
+                return _RefId;
             }
         }
-        public string ReferenceProperty
-        {
-            get
-            {
-                return _ReferenceProperty;
-            }
-        }
-        public static KeyValuePair<string,string> GetReferences(Type type, string propertyName)
+        public static Dictionary<string, string> GetExcelColumnReferences(Type type, string propertyName)
         {
             PropertyInfo[] properties = type.GetProperties();
             List<string> requiredPropaties = new List<string>();
@@ -70,24 +79,18 @@ namespace BIMS.Attributes
                     Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ForeignKeyAttribute), false); // get the attributes of a property.
                     if (attributes.Length > 0)
                     {
-                        string refTableName = (attributes[0] as ForeignKeyAttribute).ReferenceTable.ToString();
-                        string refProperty = (attributes[0] as ForeignKeyAttribute).ReferenceProperty.ToString();
-                        KeyValuePair<string, string> pair = new KeyValuePair<string, string>(refTableName, refProperty);
-                        return pair;
+                        return ((ForeignKeyAttribute)attributes[0]).MappingWithExcelColumn;
                     }
                     else
                     {
-                        return default(KeyValuePair<string, string>);
+                        return null;
                     }
                 }
-                
             }
-            return default(KeyValuePair<string, string>);
+            return null;
         }
-
-        public static string GetMappingProperty(Type type, string propertyName)
+        public static string GetRefId(Type type, string propertyName)
         {
-
             PropertyInfo[] properties = type.GetProperties();
             List<string> requiredPropaties = new List<string>();
             foreach (PropertyInfo property in properties)
@@ -97,8 +100,29 @@ namespace BIMS.Attributes
                     Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ForeignKeyAttribute), false); // get the attributes of a property.
                     if (attributes.Length > 0)
                     {
-                        string mappingProperty = (attributes[0] as ForeignKeyAttribute).MappingProperty.ToString();
-                        return mappingProperty;
+                        return ((ForeignKeyAttribute)attributes[0]).RefId ;
+                    }
+                    else
+                    {
+                       return null;
+                    }
+                }
+
+            }
+            return null;
+        }
+        public static string GetRefTable(Type type, string propertyName)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            List<string> requiredPropaties = new List<string>();
+            foreach (PropertyInfo property in properties)
+            {
+                if (property.Name.Equals(propertyName))
+                {
+                    Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ForeignKeyAttribute), false); // get the attributes of a property.
+                    if (attributes.Length > 0)
+                    {
+                        return ((ForeignKeyAttribute)attributes[0])._RefTableName;
                     }
                     else
                     {
@@ -108,6 +132,17 @@ namespace BIMS.Attributes
 
             }
             return null;
+        }
+        private KeyValuePair<string,string> Parse(string s)
+        {
+            s = s.TrimEnd(']');
+            string[] array = s.Split('[');
+            if (array.Length==2)
+            {
+                return new KeyValuePair<string, string>(array[0], array[1]);
+            }
+            return default(KeyValuePair<string, string>);
+         
         }
     }
 }

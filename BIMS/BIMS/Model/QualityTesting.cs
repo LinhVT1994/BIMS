@@ -30,7 +30,7 @@ namespace BIMS.Model
             ArchivedStrength28Days = archivedStrength28Days;
 
         }
-        [Required, AutoIncrement, PrimaryKey]
+        [Required, AutoIncrement, PrimaryKey, SqlParameter("quality_testing_id")]
         public int QualityTestingId
         {
             get
@@ -42,7 +42,7 @@ namespace BIMS.Model
                 _QualityTestingId = value;
             }
         }
-        [Required,ExcelColumn("AR")]
+        [Required,ExcelColumn("AR"), SqlParameter("name")]
         public string Name
         {
             get
@@ -54,7 +54,7 @@ namespace BIMS.Model
                 _Name = value;
             }
         }
-        [Required, ExcelColumn("AS")]
+        [Required, ExcelColumn("AS"), SqlParameter("archived_strength_7day")]
         public double ArchivedStrength7Days
         {
             get
@@ -66,7 +66,7 @@ namespace BIMS.Model
                 _ArchivedStrength7Days = value;
             }
         }
-        [Required, ExcelColumn("AT")]
+        [Required, ExcelColumn("AT"), SqlParameter("archived_strength_28day")]
         public double ArchivedStrength28Days
         {
             get
@@ -78,6 +78,7 @@ namespace BIMS.Model
                 _ArchivedStrength28Day = value;
             }
         }
+        [Required,SqlParameter("construction_excuting_id")]
         public ConstructionExecuting ConstructionExecuting
         {
             get
