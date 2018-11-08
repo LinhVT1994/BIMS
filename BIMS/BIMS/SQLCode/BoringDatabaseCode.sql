@@ -137,7 +137,7 @@ TEMPLATE = template1            -- use template1 as a template.
 */
  -- 1.Create a "position" table with its properties
  CREATE TABLE "position"(
-	position_id integer,      
+	position_id SERIAL ,      
 	name varchar(200),        -- 住所
     latitude  varchar(50),    -- 緯度
     longitude  varchar(50),   -- 軽度
@@ -146,7 +146,7 @@ TEMPLATE = template1            -- use template1 as a template.
 
  -- 2. Create a "party" table and its properties.
 CREATE TABLE "party"(
-	party_id integer,
+	party_id SERIAL,
 	name varchar(200),	 -- 会社名
     address varchar(200),		-- 住所名前
 	phone  varchar(12),         -- 携帯電話番号 081804228150アドレス
@@ -154,13 +154,13 @@ CREATE TABLE "party"(
 );
  --3.1. Create "tool_type" with its properties.
 create TABLE "tool_type"(
-	tool_type_id integer,
+	tool_type_id SERIAL,
 	name varchar(200),
 	constraint pk_tool_type primary key("tool_type_id")
 );
  --3. Create "tool" with its properties.
 CREATE TABLE "tool"(
-	tool_id integer,      
+	tool_id SERIAL,      
 	name varchar(200),        -- 用具の名前
 	tool_type_id integer,
 	constraint pk_tool primary key(tool_id)
@@ -169,7 +169,8 @@ CREATE TABLE "tool"(
 
  --4. Create "construction" table and its properties.
 CREATE TABLE "construction"(
-	construction_id integer,
+	construction_id SERIAL,
+	construction_no varchar(20),
 	name varchar(200),		-- 事名
 	position_id integer,      -- 位置のIｄ
 	constraint pk_construction primary key(construction_id)
@@ -177,7 +178,7 @@ CREATE TABLE "construction"(
 
  --5. create "soil_type" table and its poperties.
 CREATE TABLE "soil_type"(
-	soil_type_id integer,
+	soil_type_id SERIAL,
 	name varchar(500),--　土のタイプの名前
 	symbol varchar(10),--　記号
 	description text,--　説明
@@ -187,14 +188,14 @@ CREATE TABLE "soil_type"(
 
  --6. Create "using_tool" with its properties.
 CREATE TABLE "using_tool"(
-	using_tool_id integer,      
+	using_tool_id SERIAL,      
 	tool_id integer,        -- 使う用具のId
     boring_test_id  integer,  -- どんなタイプ
 	constraint pk_using_tool primary key(using_tool_id)
 );
  --7. create "boring_test" table and its poperties.
 CREATE TABLE "boring_test"(
-	boring_test_id integer,
+	boring_test_id SERIAL,
 	name varchar(500),--　調査名
 	construction_id integer, --　工事名
 	order_party_id integer, --　発注機関
@@ -203,7 +204,7 @@ CREATE TABLE "boring_test"(
 );
  --8. create "result" table and its poperties.
 CREATE TABLE "result"(
-	result_id integer,
+	result_id SERIAL,
 	name varchar(100),
 	boring_test_id integer, -- ボーリングの試験のId
 	slope_of_ground double precision,     -- 地盤勾配
@@ -219,7 +220,7 @@ CREATE TABLE "result"(
 
  --9. Create "spt_result" table and its properties.
 CREATE TABLE "spt_result"(
-	spt_result_id integer,
+	spt_result_id SERIAL,
 	from_depth double precision,    --　深さから
 	-- to_depth double precision,        --　深さまで
 	first smallint,		 -- 一番目の１０センチのＳＰＴ
@@ -234,7 +235,7 @@ CREATE TABLE "spt_result"(
 
  --10. create "soil_result" table and its poperties.
 CREATE TABLE "soil_result"(
-	soil_result_id integer,
+	soil_result_id SERIAL,
 	from_depth double precision,   --　深さから
 	to_depth double precision,   --　深さまで
 	soil_type_id integer,	--　土のタイプのIｄ
@@ -255,7 +256,7 @@ CREATE TABLE "soil_result"(
  */
  --11. create "soil_sample" (試料) table and its poperties.
  CREATE TABLE "soil_sample"(
-	soil_sample_id integer,
+	soil_sample_id SERIAL,
 	sample_no varchar(50),
 	from_depth double precision,   --　深さから
 	to_depth double precision,   --　深さまで
@@ -265,14 +266,14 @@ CREATE TABLE "soil_result"(
 
 --12. create "executing"(実装) table and its poperties.
  CREATE TABLE "executing"(
-	executing_id integer,	
+	executing_id SERIAL,	
 	soil_sample_id int,   --
 	conducting_date date,
  	constraint pk_executing primary key(executing_id) 
 );
  --13. create "consistency_varcharistic"(ンシステンシー　特性) table and its poperties.
  CREATE TABLE "consistency_varcharistic"(
-	id integer,
+	id SERIAL,
 	liquid_limit double precision,   --　液性限界
 	plasticity_limit double precision,   --　塑性限界
 	plasticity_index double precision,   --　塑性指数
@@ -282,7 +283,7 @@ CREATE TABLE "soil_result"(
 
  --14. create "consolidation"(圧密) table and its poperties.
  CREATE TABLE "consolidation"(
-	id integer,
+	id SERIAL,
 	compression_index double precision,   -- 圧縮指数
 	consolidation_yield_stress double precision,   --　圧密降伏応力
 	test_method varchar(100), -- 試験方法
@@ -293,7 +294,7 @@ CREATE TABLE "soil_result"(
 
  --15. create "shear"(せん断) table and its poperties.
  CREATE TABLE "shear"(
-	id integer,
+	id SERIAL,
 	total_stress_c double precision,  
 	total_stress_c1 double precision, 
 	affective_stress_c double precision,  
@@ -305,7 +306,7 @@ CREATE TABLE "soil_result"(
 
  --16. create "general"(一般) table and its poperties.
  CREATE TABLE "general"(
-	id integer,
+	id SERIAL,
 	dry_density double precision,   -- 湿潤密度
 	wet_density double precision,   --　乾燥密度
 	soil_particle double precision,   -- 土粒子の密度
@@ -318,7 +319,7 @@ CREATE TABLE "soil_result"(
 
  --17. create "particle_size"(粒度) table and its poperties.
  CREATE TABLE "particle_size"(
-	id integer,
+	id SERIAL,
 	stone double precision,   -- 石分
 	gravel double precision,   --　礫分
 	sand double precision,   -- 砂分
@@ -333,7 +334,7 @@ CREATE TABLE "soil_result"(
 );
 --18. create "soil_classification"(土の分類) table and its poperties.
  CREATE TABLE "soil_classification"(
-	id integer,	
+	id SERIAL,	
 	soil_type_id int,  
 	conducting_date date,
 	executing_id integer,
@@ -343,7 +344,7 @@ CREATE TABLE "soil_result"(
 
 --A1. create "testing_sample"(土の分類) table and its poperties.
  CREATE TABLE "testing_sample"(
-	testing_sample_id integer,	
+	testing_sample_id SERIAL,	
 	soil_type_id int,  
 	name varchar(50),
 	natural_water_content_ratio double precision,
@@ -357,7 +358,7 @@ CREATE TABLE "soil_result"(
 
 --A2. create "cement"(セメント) table and its poperties.
  CREATE TABLE "cement"(
-	cement_id integer,	
+	cement_id SERIAL,	
 	symbol varchar(20),
 	name varchar(200),
  	constraint pk_cement primary key(cement_id) 
@@ -365,7 +366,7 @@ CREATE TABLE "soil_result"(
 
 --A3. create "mixing_result"(セメントと土を混ぜる試験) table and its poperties.
  CREATE TABLE "mixing_result"(
-	mixing_result_id integer,	
+	mixing_result_id SERIAL,	
 	cement_amount double precision,
 	archived_strength double precision,
 	water_content_ratio double precision,
@@ -377,7 +378,7 @@ CREATE TABLE "soil_result"(
 
 --A4. create "construction_executing"(現場で実装) table and its poperties.
  CREATE TABLE "construction_executing"(
-	construction_executing_id integer,	
+	construction_executing_id SERIAL,	
 	cement_amount double precision,
 	archived_strength double precision,
 	cement_id integer,
@@ -386,7 +387,7 @@ CREATE TABLE "soil_result"(
 );
 --A5. create "quality_testing"(品質管理) table and its poperties.
  CREATE TABLE "quality_testing"(
-	quality_testing_id integer,	
+	quality_testing_id SERIAL,	
 	name varchar(200),
 	archived_strength_7day double precision,
 	archived_strength_28day double precision,
