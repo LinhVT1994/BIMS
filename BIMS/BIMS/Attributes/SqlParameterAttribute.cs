@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace BIMS.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property|AttributeTargets.Class)]
     class SqlParameterAttribute : Attribute
     {
         private string _PropertyName = null;
         public SqlParameterAttribute(string name)
         {
+            name = name.ToLower();
             this._PropertyName = name;
         }
 
@@ -21,7 +22,7 @@ namespace BIMS.Attributes
             PropertyInfo[] properties = type.GetProperties();
             foreach (PropertyInfo property in properties)
             {
-                if (property.Name.Trim().Equals(propertyName.Trim().ToLower()))
+                if (property.Name.Trim().ToLower().Equals(propertyName.Trim().ToLower()))
                 {
                     Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(SqlParameterAttribute), false); // get the attributes of a property.
                     if (attributes.Length > 0)

@@ -1,9 +1,16 @@
-﻿using System;
+﻿using BIMS.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BIMS.Attributes;
+using static BIMS.Attributes.AutoIncrementAttribute;
+using static BIMS.Attributes.UniqueAttribute;
+using static BIMS.Attributes.ExcelColumnAttribute;
+using static BIMS.Attributes.ForeignKeyAttribute;
+using System.Reflection;
 
 namespace BIMS.Utilities
 {
@@ -31,7 +38,22 @@ namespace BIMS.Utilities
                 watch.Start();
             }
         }
-       
+        public static object ParseDataWith(Type type,DataSet dataSet)
+        {
+            object anonymous = (object)Activator.CreateInstance(type);
+            List<PropertyInfo> propertiesInfo= RequiredAttribute.GetRequiredProperties(type);
+            foreach (PropertyInfo propertyInfo in propertiesInfo)
+            {
+                string key = SqlParameterAttribute.GetNameOfParameter(type, propertyInfo.Name);
+                string value = dataSet.Value(key.ToLower());
+                if (value!=null)
+                {
+                    propertyInfo.SetValueByDataType(anonymous, value);
+                }
+            }
+            return anonymous;
+
+        }
         public static void StopCountingTime()
         {
             if (watch.IsRunning)

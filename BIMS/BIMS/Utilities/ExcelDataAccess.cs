@@ -62,7 +62,7 @@ namespace BIMS.Utilities
             Dictionary<string, T> dicResult = new Dictionary<string, T>();
             Type type = typeof(T);
             // the properties what need to get value from a excel file.
-            List<string> properties = RequiredAttribute.GetRequiredProperties(typeof(T));
+            List<string> properties = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
             if (properties.Count == 0)
             {
                 throw new Exception("Dont have any required property.");

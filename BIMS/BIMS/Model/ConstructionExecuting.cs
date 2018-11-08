@@ -12,6 +12,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/7
     */
+    [SqlParameter("construction_executing")]
     class ConstructionExecuting
     {
         private int _Construction_Executing_Id;

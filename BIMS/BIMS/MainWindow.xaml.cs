@@ -19,24 +19,57 @@ using System.Windows.Shapes;
 using System.Data.SqlClient;
 using Npgsql;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Threading;
 
 namespace BIMS
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
         TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public MainWindow()
         {
             InitializeComponent();
         }
-
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            ExcelToSqlManipulation.Execute<Construcion>();
+            List<string> message = new List<string>();
+            listInformation.Items.Add("Starting updating data to Position table.");
+            listInformation.Items.Refresh();
+            listInformation.DataContext = message;
+            Debug.WriteLine("Starting updating data to Position table.");
+            ExcelToSqlManipulation.Execute<Construction>();
+            return;
+
+
+            Task task1 = Task.Run(() =>
+            {
+                ExcelToSqlManipulation.Execute<Position>();
+            }).ContinueWith((theFirstTask)=> {
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    listInformation.Items.Add("Updating data to Position table is success!");
+                }));
+               
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    listInformation.Items.Refresh();
+                    listInformation.Items.Add("Updating data to Construction is success!");
+                    Debug.WriteLine("Updating data to Position Construction is success!");
+                }));
+
+            });
+
+
+            listInformation.Items.Refresh();
             #region Code statements for testing.
 
 #if (DEBUG && TESTTED)
@@ -59,7 +92,7 @@ namespace BIMS
            Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
            string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
            ExcelDataAccess reader = ExcelDataAccess.GetInstance();
-           Dictionary<string,Construcion> positions = reader.Read<Construcion>(url);
+           Dictionary<string,Construction> positions = reader.Read<Construction>(url);
            // reader.Read(url);
         }
 

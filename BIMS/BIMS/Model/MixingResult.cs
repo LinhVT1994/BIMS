@@ -12,6 +12,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/7
     */
+    [SqlParameter("mixing_result")]
     class MixingResult
     {
         private int _MixingResultId;

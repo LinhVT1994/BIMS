@@ -5,10 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BIMS"
         mc:Ignorable="d"
-        Title="Load from a extend file." Height="150" Width="350">
+        Title="Load from a extend file." Height="500" Width="350">
     <Grid>
-        <Button Name="LoadFromAExtendFile" Height="50" Width="175" Content="Load from a extend file..." Click="LoadFromAExtendFile_Click">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Name="LoadFromAExtendFile" Grid.Row="0" Height="50" Margin="10,0,10,0" Content="Load from a extend file..." Click="LoadFromAExtendFile_Click">
 
         </Button>
+        <ListBox Name="listInformation"  Grid.Row="1" Margin="10,0,10,10"  ItemsSource="{Binding ElementName=UI, Path=ListMessages}">
+            <TextBlock Text="Message" />
+        </ListBox>
     </Grid>
 </Window>

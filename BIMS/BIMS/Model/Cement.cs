@@ -14,6 +14,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/6
     */
+    [SqlParameter("cement")]
     class Cement : Element
     {
         private int    _Cement_Id;

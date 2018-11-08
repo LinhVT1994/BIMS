@@ -15,19 +15,19 @@ namespace BIMS.Attributes
         public ForeignKeyAttribute(string refTable, string mappingOperator)
         {
             _MappingWithExcelColumn = new Dictionary<string, string>();
-            string[] array =  mappingOperator.Split(new string[] { "=>" }, StringSplitOptions.None);
+            string[] array = mappingOperator.Split(new string[] { "=>" }, StringSplitOptions.None);
 
-            if (array == null || array.Length!=2)
+            if (array == null || array.Length != 2)
             {
-                throw new Exception("Is not a correct syntax."+ mappingOperator);
+                throw new Exception("Is not a correct syntax." + mappingOperator);
             }
             string mappingKeys = array[0];
             foreach (var key in mappingKeys.Split(','))
             {
-                 var pair = Parse(key);
+                var pair = Parse(key);
                 if (!pair.Equals(default(KeyValuePair<string, string>)))
                 {
-                    _MappingWithExcelColumn.Add(pair.Key,pair.Value);
+                    _MappingWithExcelColumn.Add(pair.Key, pair.Value);
                 }
             }
             _RefId = array[1];
@@ -54,7 +54,7 @@ namespace BIMS.Attributes
             List<string> requiredProperties = GetForeignKeyProperties(type);
             return requiredProperties.Contains(name);
         }
-        public Dictionary<string,string> MappingWithExcelColumn
+        public Dictionary<string, string> MappingWithExcelColumn
         {
             get
             {
@@ -100,11 +100,11 @@ namespace BIMS.Attributes
                     Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ForeignKeyAttribute), false); // get the attributes of a property.
                     if (attributes.Length > 0)
                     {
-                        return ((ForeignKeyAttribute)attributes[0]).RefId ;
+                        return ((ForeignKeyAttribute)attributes[0]).RefId;
                     }
                     else
                     {
-                       return null;
+                        return null;
                     }
                 }
 
@@ -133,16 +133,16 @@ namespace BIMS.Attributes
             }
             return null;
         }
-        private KeyValuePair<string,string> Parse(string s)
+        private KeyValuePair<string, string> Parse(string s)
         {
             s = s.TrimEnd(']');
             string[] array = s.Split('[');
-            if (array.Length==2)
+            if (array.Length == 2)
             {
                 return new KeyValuePair<string, string>(array[0], array[1]);
             }
             return default(KeyValuePair<string, string>);
-         
+
         }
     }
 }

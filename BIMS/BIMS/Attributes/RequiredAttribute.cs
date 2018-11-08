@@ -18,7 +18,7 @@ namespace BIMS.Attributes
         /// Get all of properties that is required.
         /// </summary>
         /// <param name="obj"></param>
-        public static List<string> GetRequiredProperties(Type type)
+        public static List<string> GetRequiredPropertiesName(Type type)
         {
             PropertyInfo[] properties = type.GetProperties();
             List<string> requiredPropaties = new List<string>();
@@ -32,10 +32,24 @@ namespace BIMS.Attributes
             }
             return requiredPropaties;
         }
+        public static List<PropertyInfo> GetRequiredProperties(Type type)
+        {
+            List<PropertyInfo> result = new List<PropertyInfo>();
+            PropertyInfo[] properties = type.GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(RequiredAttribute), false); // get the attributes of a property.
+                if (attributes.Length > 0)
+                {
+                    result.Add(property); // add a attribute in the required properties.
+                }
+            }
+            return result;
+        }
 
         public static bool IsRequired(Type type,string name)
         {
-            List<string> requiredProperties = GetRequiredProperties(type);
+            List<string> requiredProperties = GetRequiredPropertiesName(type);
             return requiredProperties.Contains(name);
         }
     }

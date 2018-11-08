@@ -12,25 +12,26 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/6
     */
+    [SqlParameter("position")]
     class Position
     {
         private int    _Position_Id;
         private string _Name;
-        private string _Latitute;
-        private string _Longitute;
+        private string _Latitude;
+        private string _Longitude;
         public Position()
         {
         }
-        public Position(int id, string name, string latitute = null, string longitute = null)
+        public Position(int id, string name, string latitude = null, string longitude = null)
         {
-            Potition_Id = id;
+            Position_Id = id;
             Name = name;
-            Latitute = latitute;
-            Longitute = longitute;
+            Latitude = latitude;
+            Longitude = longitude;
         }
         #region properties
-        [Required, AutoIncrement, PrimaryKey]
-        public int Potition_Id
+        [Required, AutoIncrement, PrimaryKey, SqlParameter("position_id")]
+        public int Position_Id
         {
             get
             {
@@ -41,7 +42,7 @@ namespace BIMS.Model
                 _Position_Id = value;
             }
         }
-        [Required, Unique, ExcelColumn("G")]
+        [Required, Unique, ExcelColumn("G"), SqlParameter("name")]
         public string Name
         {
             get
@@ -54,28 +55,28 @@ namespace BIMS.Model
             }
         }
 
-        [Required]
-        public string Latitute
+        [Required, SqlParameter("latitude")]
+        public string Latitude
         {
             get
             {
-                return _Latitute;
+                return _Latitude;
             }
             set
             {
-                _Latitute = value;
+                _Latitude = value;
             }
         }
-        [Required]
-        public string Longitute
+        [Required, SqlParameter("longitude")]
+        public string Longitude
         {
             get
             {
-                return _Longitute;
+                return _Longitude;
             }
             set
             {
-                _Longitute = value;
+                _Longitude = value;
             }
         }
         #endregion

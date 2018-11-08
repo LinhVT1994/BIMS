@@ -11,6 +11,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/7
     */
+    [SqlParameter("testing_sample")]
     class TestingSample
     {
         private int    _TestingSampleId;
@@ -20,8 +21,7 @@ namespace BIMS.Model
         private string _Color;
         private string _Description;
         private double _TagetStrength;
-        private Construcion _Construction;
-
+        private Construction _Construction;
         [Required, PrimaryKey, AutoIncrement, SqlParameter("testing_sample_id")]
         public int TestingSampleId
         {
@@ -108,7 +108,7 @@ namespace BIMS.Model
         }
 
         [Required, ExcelColumn("E"), SqlParameter("construcion_id")]
-        public Construcion Construction
+        public Construction Construction
         {
             get
             {
