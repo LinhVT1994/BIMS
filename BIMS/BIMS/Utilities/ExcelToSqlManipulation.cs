@@ -11,6 +11,7 @@ using static BIMS.Attributes.AutoIncrementAttribute;
 using static BIMS.Attributes.UniqueAttribute;
 using static BIMS.Attributes.ExcelColumnAttribute;
 using static BIMS.Attributes.ForeignKeyAttribute;
+using static BIMS.Attributes.PrimaryKeyAttribute;
 using System.Diagnostics;
 using System.Data.SqlClient;
 using static BIMS.Attributes.PropertyInfoExtensions;
@@ -19,7 +20,9 @@ namespace BIMS.Utilities
 
     class ExcelToSqlManipulation
     {
-        private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+
+        //private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         public static DataSet GetForeignKeyInSQL(string idRef, string tableRef, List<SqlParameter> sqlParams)
         {
             // select * from ? where  abc = csss;
@@ -140,8 +143,18 @@ namespace BIMS.Utilities
                         {
                             string propertyInSql = item.Key;
                             string propertyInExcel = item.Value;
-                            string valueInCell = xlworkSheet.Cells[i, propertyInExcel].Value.ToString();
-                            parameters.Add(new SqlParameter(propertyInSql, valueInCell));
+                            string valueInCell = GetValueInCell(xlworkSheet, i, propertyInExcel);
+                            if (string.IsNullOrWhiteSpace(valueInCell))
+                            {
+                                string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", i, propertyInExcel, "Ignore", "Can't get value on this cell.");
+                                LoggingHelper.WriteDown(message);
+                                break;
+                            }
+                            else
+                            {
+                                parameters.Add(new SqlParameter(propertyInSql, valueInCell));
+                            }
+                           
                         }
                         string refId = GetRefId(typeof(T), propertyInfo.Name);
                         string tableName = GetRefTable(typeof(T), propertyInfo.Name);
@@ -199,7 +212,7 @@ namespace BIMS.Utilities
             // close the excel app.
             xlWorkBook.Close();
             xlApplication.Quit();
-            return false;
+            return true;
         }
         private static object RequestToSql<T>(T parseTo)
         {
@@ -213,27 +226,24 @@ namespace BIMS.Utilities
                object result = propertyInfo.GetValue(parseTo);
                if (result!=null)
                {
-                    string paramValue = propertyInfo.GetValue(parseTo).ToString();
+                    object paramValue = propertyInfo.GetValue(parseTo);
                     if (propertyInfo.PropertyType == typeof(string))
                     {
                         parameters.Add(new SqlParameter(paramName, paramValue));
                     }
                     else if (propertyInfo.PropertyType == typeof(int))
                     {
-                        parameters.Add(new SqlParameter(paramName, int.Parse(paramValue)));
+                        parameters.Add(new SqlParameter(paramName, paramValue));
                     }
                     else if (propertyInfo.PropertyType == typeof(double))
                     {
-                        double db;
-                        double.TryParse(paramValue, out db);
-                        parameters.Add(new SqlParameter(paramName, db));
+                        parameters.Add(new SqlParameter(paramName, paramValue));
                     }
-                    else if (propertyInfo.PropertyType == typeof(Element))
+                    else if (propertyInfo.PropertyType.BaseType == typeof(Element))
                     {
-
-                        int id;
-
-                        parameters.Add(new SqlParameter(paramName, db));
+                        string refId = ForeignKeyAttribute.GetRefId(typeof(T), property);
+                        object data = GetPrimaryKeyValue(paramValue);
+                        parameters.Add(new SqlParameter(paramName, data));
                     }
                     else 
                     {
@@ -319,6 +329,22 @@ namespace BIMS.Utilities
                 }
             }
             return null;
+        }
+        public static string GetValueInCell(Excel.Worksheet xlworkSheet, int row , string columnName)
+        {
+            try
+            {
+                Excel.Range cell = xlworkSheet.Cells[row, columnName];
+                if (cell.Value != null)
+                {
+                    return xlworkSheet.Cells[row, columnName].Value.ToString();
+                }
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

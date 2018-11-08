@@ -13,7 +13,7 @@ namespace BIMS.Model
     * @since   2018/11/7
     */
     [SqlParameter("mixing_result")]
-    class MixingResult
+    class MixingResult : Element
     {
         private int _MixingResultId;
         private double _Cement_Amount;

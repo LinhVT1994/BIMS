@@ -13,7 +13,7 @@ namespace BIMS.Model
     * @since   2018/11/7
     */
     [SqlParameter("construction_executing")]
-    class ConstructionExecuting
+    class ConstructionExecuting : Element
     {
         private int _Construction_Executing_Id;
         private double _Cement_Amount;

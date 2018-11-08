@@ -12,7 +12,7 @@ namespace BIMS.Model
     * @since   2018/11/7
     */
     [SqlParameter("testing_sample")]
-    class TestingSample
+    class TestingSample : Element
     {
         private int    _TestingSampleId;
         private string _Name;

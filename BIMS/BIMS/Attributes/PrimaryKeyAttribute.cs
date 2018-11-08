@@ -13,7 +13,7 @@ namespace BIMS.Attributes
         public PrimaryKeyAttribute()
         {
         }
-        public static List<string> GetPrimaryKeyProperties(Type type)
+        public static PropertyInfo GetPrimaryKey(Type type)
         {
             PropertyInfo[] properties = type.GetProperties();
             List<string> requiredPropaties = new List<string>();
@@ -22,15 +22,20 @@ namespace BIMS.Attributes
                 Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(PrimaryKeyAttribute), false); // get the attributes of a property.
                 if (attributes.Length > 0)
                 {
-                    requiredPropaties.Add(property.Name); // add a attribute in the required properties.
+                    return property;
                 }
             }
-            return requiredPropaties;
+            return null;
+        }
+        public static object GetPrimaryKeyValue(Object obj)
+        {
+            PropertyInfo key =  GetPrimaryKey(obj.GetType());
+            return key.GetValue(obj);
         }
         public static bool IsPrimaryKey(Type type, string name)
         {
-            List<string> requiredProperties = GetPrimaryKeyProperties(type);
-            return requiredProperties.Contains(name);
+            PropertyInfo requiredProperties = GetPrimaryKey(type);
+            return requiredProperties != null;
         }
     }
 }

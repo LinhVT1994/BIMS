@@ -16,7 +16,7 @@ namespace BIMS.Model
     * @since   2018/11/6
     */
     [SqlParameter("construction")]
-    class Construction
+    class Construction : Element
     {
         private int      _Construction_Id;
         private string   _Construction_No;

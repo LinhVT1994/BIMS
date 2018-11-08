@@ -13,7 +13,7 @@ namespace BIMS.Model
     * @since   2018/11/6
     */
     [SqlParameter("position")]
-    class Position
+    class Position : Element
     {
         private int    _Position_Id;
         private string _Name;

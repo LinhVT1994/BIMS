@@ -12,27 +12,32 @@ namespace BIMS.Attributes
     {
         public static void SetValueByDataType(this PropertyInfo propertyInfo, object obj,object value)
         {
-            if (propertyInfo.PropertyType == typeof(string))
+            if (value == null)
             {
-                propertyInfo.SetValue(obj, value.ToString());
-            }
-            else if (propertyInfo.PropertyType == typeof(int))
-            {
-                propertyInfo.SetValue(obj, int.Parse(value.ToString()));
-            }
-            else if (propertyInfo.PropertyType == typeof(double))
-            {
-                double db;
-                double.TryParse(value.ToString(), out db);
-                propertyInfo.SetValue(obj, db);
+                propertyInfo.SetValue(obj,null);
             }
             else
             {
-               propertyInfo.SetValue(obj, value);
+                if (propertyInfo.PropertyType == typeof(string))
+                {
+                    propertyInfo.SetValue(obj, value.ToString());
+                }
+                else if (propertyInfo.PropertyType == typeof(int))
+                {
+                    propertyInfo.SetValue(obj, int.Parse(value.ToString()));
+                }
+                else if (propertyInfo.PropertyType == typeof(double))
+                {
+                    double db;
+                    double.TryParse(value.ToString(), out db);
+                    propertyInfo.SetValue(obj, db);
+                }
+                else
+                {
+                    propertyInfo.SetValue(obj, value);
 
+                }
             }
         }
-
-
     }
 }

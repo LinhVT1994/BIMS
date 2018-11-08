@@ -12,7 +12,7 @@ namespace BIMS.Model
     * @since   2018/11/7
     */
     [SqlParameter("quality_testing")]
-    class QualityTesting
+    class QualityTesting : Element
     {
         private int    _QualityTestingId;
         private string _Name;

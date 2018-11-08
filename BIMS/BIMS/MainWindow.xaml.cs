@@ -31,7 +31,7 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-        TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
+        //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -41,34 +41,42 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            List<string> message = new List<string>();
-            listInformation.Items.Add("Starting updating data to Position table.");
-            listInformation.Items.Refresh();
-            listInformation.DataContext = message;
             Debug.WriteLine("Starting updating data to Position table.");
-            ExcelToSqlManipulation.Execute<Construction>();
-            return;
-
-
-            Task task1 = Task.Run(() =>
+            listInformation.Items.Add("Updating data to Position table is success!");
+            Task<bool> task1 = Task<bool>.Run(() =>
             {
-                ExcelToSqlManipulation.Execute<Position>();
-            }).ContinueWith((theFirstTask)=> {
-                this.Dispatcher.Invoke((Action)(() =>
+                return ExcelToSqlManipulation.Execute<Position>();
+                
+            }).ContinueWith<bool>((theFirstTask)=> {
+                if (theFirstTask.Result)
                 {
-                    listInformation.Items.Add("Updating data to Position table is success!");
-                }));
-               
-                this.Dispatcher.Invoke((Action)(() =>
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Add("Updating data to Position table is success!");
+                    }));
+                    if (ExcelToSqlManipulation.Execute<Construction>())
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                else
                 {
-                    listInformation.Items.Refresh();
-                    listInformation.Items.Add("Updating data to Construction is success!");
-                    Debug.WriteLine("Updating data to Position Construction is success!");
-                }));
-
+                    return false;
+                }
+            }).ContinueWith<bool>((theFirstTask)=> {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Refresh();
+                        listInformation.Items.Add("Updating data to Construction is success!");
+                        Debug.WriteLine("Updating data to Position Construction is success!");
+                    }));
+                    return true;
+                }
+                return false;
             });
-
-
             listInformation.Items.Refresh();
             #region Code statements for testing.
 
@@ -90,7 +98,8 @@ namespace BIMS
         
            Position position = new Position();
            Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
-           string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+           //string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx"; 
+           string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
            ExcelDataAccess reader = ExcelDataAccess.GetInstance();
            Dictionary<string,Construction> positions = reader.Read<Construction>(url);
            // reader.Read(url);
@@ -98,7 +107,7 @@ namespace BIMS
 
         private void TestSQLCommand()
         {
-            Debug.Listeners.Add(listener);
+         //   Debug.Listeners.Add(listener);
             SqlDataAccess sql = new SqlDataAccess();
             SqlParameter[] para = new SqlParameter[1];
            
