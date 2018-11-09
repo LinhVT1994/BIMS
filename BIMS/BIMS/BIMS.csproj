@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="logging.txt" />
+    <Resource Include="Resources\Icons\cloud_load.gif" />
     <Content Include="SQLCode\BoringDatabaseCode.sql" />
     <Content Include="SQLCode\DataSample.sql" />
     <Content Include="SQLCode\QueriesTest.sql" />

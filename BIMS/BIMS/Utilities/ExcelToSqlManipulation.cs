@@ -21,8 +21,8 @@ namespace BIMS.Utilities
     class ExcelToSqlManipulation
     {
 
-        //private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
-        private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+        private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        //private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         public static DataSet GetForeignKeyInSQL(string idRef, string tableRef, List<SqlParameter> sqlParams)
         {
             // select * from ? where  abc = csss;
@@ -56,8 +56,38 @@ namespace BIMS.Utilities
             }
             // select * from position where name = 
         }
+        public static bool CheckForeignKeyProperty(Type type)
+        {
+            foreach (var property in RequiredAttribute.GetRequiredProperties(type))
+            {
+                if (IsForeignKey(type,property.Name))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static string CreateQuery<T>(string name)
+        {
+            string s = null;
+            if (!CheckForeignKeyProperty(typeof(T)))
+            {
+                return s;
+            }
+            PropertyInfo info = typeof(T).GetProperty(name);
+
+          
+            else
+            {
+            }
+            return null;
+        }
         public static bool Execute<T>()
         {
+            PropertyInfo info = typeof(T).GetProperty("TestingSample");
+            CreateQuery<T>(info);
+            return false;
+
             Excel.Application xlApplication = null;
             Excel.Worksheet xlworkSheet = null;
             Excel.Workbook xlWorkBook = null;
@@ -94,7 +124,11 @@ namespace BIMS.Utilities
             Excel.Range xlRange = xlworkSheet.UsedRange;
             int numbOfRows = xlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Row;
             int numbOfColumns = xlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Column;
-
+            bool hasALeastOneUnique = true;
+            if (UniqueAttribute.GetUniqueProperties(typeof(T)).Count <= 0)
+            {
+                hasALeastOneUnique = false;
+            }
             for (int i = startIndex; i < numbOfRows; i++)
             {
                 T newObj = (T)Activator.CreateInstance(typeof(T));
@@ -104,6 +138,10 @@ namespace BIMS.Utilities
                     PropertyInfo propertyInfo = newObj.GetType().GetProperty(property);
                     if (IsAutoIncrement(typeof(T), property))
                     {
+                        if(!hasALeastOneUnique)
+                        {
+                            key = (dicResult.Count + 1).ToString();
+                        }
                         propertyInfo.SetValue(newObj, dicResult.Count + 1);
                     }
                     else if (IsUnique(typeof(T), property))

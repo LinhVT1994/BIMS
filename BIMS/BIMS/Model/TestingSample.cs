@@ -82,7 +82,7 @@ namespace BIMS.Model
                 _Color = value;
             }
         }
-        [Required, ExcelColumn("O"), SqlParameter("description")]
+        [Required, ExcelColumn("O"), SqlParameter("desctiption")]
         public string Description
         {
             get
@@ -94,7 +94,7 @@ namespace BIMS.Model
                 _Description = value;
             }
         }
-        [Required, ExcelColumn("J"), SqlParameter("target_strength")]
+        [Required, ExcelColumn("J"), SqlParameter("taget_strength")]
         public double TagetStrength
         {
             get
@@ -106,8 +106,7 @@ namespace BIMS.Model
                 _TagetStrength = value;
             }
         }
-
-        [Required, ExcelColumn("E"), SqlParameter("construcion_id")]
+        [Required, ExcelColumn("E"), ForeignKey("construction", "construction_no[E]=>construction_id"), SqlParameter("construction_id")]
         public Construction Construction
         {
             get

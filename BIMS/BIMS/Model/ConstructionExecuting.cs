@@ -69,7 +69,7 @@ namespace BIMS.Model
                 _Archived_Strength = value;
             }
         }
-        [Required,SqlParameter("cement_id")]
+        [Required,ForeignKey("cement", "symbol[AO]=>cement_id"), SqlParameter("cement_id")]
         public Cement Cement
         {
             get
@@ -81,7 +81,7 @@ namespace BIMS.Model
                 _Cement = value;
             }
         }
-        [Required,SqlParameter("testing_sample_id")]
+        [Required, ExcelColumn("G"), ForeignKey("position", "name[G]=>position_id"), SqlParameter("testing_sample_id")]
         public TestingSample TestingSample
         {
             get

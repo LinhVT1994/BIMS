@@ -31,7 +31,7 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-        //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
+        TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -41,8 +41,10 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Starting updating data to Position table.");
-            listInformation.Items.Add("Updating data to Position table is success!");
+
+            ExcelToSqlManipulation.Execute<ConstructionExecuting>();
+            return;
+            listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>
             {
                 return ExcelToSqlManipulation.Execute<Position>();
@@ -53,12 +55,40 @@ namespace BIMS
                     this.Dispatcher.Invoke((Action)(() =>
                     {
                         listInformation.Items.Add("Updating data to Position table is success!");
+                        listInformation.Items.Add("Starting updating data to Construction table...");
+                        listInformation.Items.Refresh();
                     }));
-                    if (ExcelToSqlManipulation.Execute<Construction>())
-                    {
-                        return true;
-                    }
+                    return ExcelToSqlManipulation.Execute<Construction>();
+                }
+                else
+                {
                     return false;
+                }
+            }).ContinueWith<bool>((theFirstTask) => {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Add("Updating data to Construction table is success!");
+                        listInformation.Items.Add("Starting updating data to Cement table...");
+                        listInformation.Items.Refresh();
+                    }));
+                    return ExcelToSqlManipulation.Execute<Cement>();
+                }
+                else
+                {
+                    return false;
+                }
+            }).ContinueWith<bool>((theFirstTask) => {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Add("Updating data to Cement table is success!");
+                        listInformation.Items.Add("Starting updating data to TestingSample table...");
+                        listInformation.Items.Refresh();
+                    }));
+                    return ExcelToSqlManipulation.Execute<TestingSample>();
                 }
                 else
                 {
@@ -70,8 +100,7 @@ namespace BIMS
                     this.Dispatcher.Invoke((Action)(() =>
                     {
                         listInformation.Items.Refresh();
-                        listInformation.Items.Add("Updating data to Construction is success!");
-                        Debug.WriteLine("Updating data to Position Construction is success!");
+                        listInformation.Items.Add("All of the tables has updated successfuly!");
                     }));
                     return true;
                 }
@@ -98,8 +127,8 @@ namespace BIMS
         
            Position position = new Position();
            Dictionary<string, string> column = ExcelColumnAttribute.ColumnNamesMapping(position);
-           //string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx"; 
-           string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+           string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx"; 
+           //string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
            ExcelDataAccess reader = ExcelDataAccess.GetInstance();
            Dictionary<string,Construction> positions = reader.Read<Construction>(url);
            // reader.Read(url);

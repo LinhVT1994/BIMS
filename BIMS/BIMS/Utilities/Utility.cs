@@ -54,6 +54,10 @@ namespace BIMS.Utilities
             return anonymous;
 
         }
+        public static object SetDefaultValue(object obj)
+        {
+            return null;
+        }
         public static void StopCountingTime()
         {
             if (watch.IsRunning)
