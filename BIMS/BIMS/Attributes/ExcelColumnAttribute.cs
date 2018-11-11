@@ -54,6 +54,37 @@ namespace BIMS.Attributes
             }
             return requiredPropaties;
         }
+        public static int GetNumbOfColumnsToRead(Type type)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ExcelColumnAttribute), false); // get the attributes of a property.
+                if (attributes.Length > 0)
+                {
+                    string value = ((ExcelColumnAttribute)attributes[0]).Name.ToString();
+                    return value.Split(',').Length;
+                }
+            }
+            return 0;
+        }
+
+        public static Dictionary<string, string[]> GetNameOfColumnsInExcel(Type type)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            Dictionary<string, string[]> dic = new Dictionary<string, string[]>();
+            foreach (PropertyInfo property in properties)
+            {
+                Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ExcelColumnAttribute), false); // get the attributes of a property.
+                if (attributes.Length > 0)
+                {
+                    string value = ((ExcelColumnAttribute)attributes[0]).Name.ToString();
+                    dic.Add(property.Name, value.Split(','));
+                }
+            }
+            return dic;
+        }
+
         public string Name
         {
             get

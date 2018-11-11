@@ -74,6 +74,7 @@
     <Compile Include="Attributes\AttributeExtensions.cs" />
     <Compile Include="Attributes\AttributeUtilities.cs" />
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
+    <Compile Include="Attributes\DistinguishAttribute.cs" />
     <Compile Include="Attributes\ExcelColumnAttribute.cs" />
     <Compile Include="Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="Model\Position.cs" />
     <Compile Include="Model\QualityTesting.cs" />
     <Compile Include="Model\TestingSample.cs" />
+    <Compile Include="Utilities\DetectRelationships.cs" />
     <Compile Include="Utilities\ExcelToSqlManipulation.cs" />
     <Compile Include="Utilities\SqlDataAccess.cs" />
     <Compile Include="Utilities\ExcelDataAccess.cs" />

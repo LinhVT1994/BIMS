@@ -31,7 +31,7 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-        TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
+        //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -41,8 +41,8 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-
-            ExcelToSqlManipulation.Execute<ConstructionExecuting>();
+            
+            ExcelToSqlManipulation.ExecuteMultiRecords<MixingResult>();
             return;
             listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>

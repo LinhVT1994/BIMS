@@ -17,7 +17,7 @@ namespace BIMS.Attributes
             this._PropertyName = name;
         }
 
-        public static string GetNameOfParameter(Type type,string propertyName)
+        public static string GetNameOfParameterInSql(Type type,string propertyName)
         {
             PropertyInfo[] properties = type.GetProperties();
             foreach (PropertyInfo property in properties)

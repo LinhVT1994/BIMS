@@ -63,7 +63,7 @@ namespace BIMS.Model
                 _Name = value;
             }
         }
-        [Required, ExcelColumn("G"), ForeignKey("position", "name[G]=>position_id"), SqlParameter("position_id")]
+        [Required, ExcelColumn("G"), SqlParameter("position_id"), ForeignKey("position", "position.name[G]=>position_id")]
         public Position Position {
             get
             {

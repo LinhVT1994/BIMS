@@ -79,7 +79,7 @@ namespace BIMS.Model
                 _ArchivedStrength28Day = value;
             }
         }
-        [Required,SqlParameter("construction_excuting_id")]
+        [Required, SqlParameter("construction_excuting_id"), ForeignKey("testing_sample", "construction_no[G]=>construction_id")]
         public ConstructionExecuting ConstructionExecuting
         {
             get

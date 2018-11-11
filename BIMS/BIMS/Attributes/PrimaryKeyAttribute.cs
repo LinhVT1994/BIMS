@@ -34,8 +34,12 @@ namespace BIMS.Attributes
         }
         public static bool IsPrimaryKey(Type type, string name)
         {
-            PropertyInfo requiredProperties = GetPrimaryKey(type);
-            return requiredProperties != null;
+            PropertyInfo primaryKey = GetPrimaryKey(type);
+            if (name.ToLower().Equals(primaryKey.Name.ToLower()))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

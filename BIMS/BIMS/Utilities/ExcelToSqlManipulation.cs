@@ -10,6 +10,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using static BIMS.Attributes.AutoIncrementAttribute;
 using static BIMS.Attributes.UniqueAttribute;
 using static BIMS.Attributes.ExcelColumnAttribute;
+using static BIMS.Attributes.DistinguishAttribute;
 using static BIMS.Attributes.ForeignKeyAttribute;
 using static BIMS.Attributes.PrimaryKeyAttribute;
 using System.Diagnostics;
@@ -21,8 +22,8 @@ namespace BIMS.Utilities
     class ExcelToSqlManipulation
     {
 
-        private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
-        //private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+       // private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         public static DataSet GetForeignKeyInSQL(string idRef, string tableRef, List<SqlParameter> sqlParams)
         {
             // select * from ? where  abc = csss;
@@ -54,39 +55,26 @@ namespace BIMS.Utilities
                     return data;
                 }
             }
-            // select * from position where name = 
         }
-        public static bool CheckForeignKeyProperty(Type type)
+        public static void Display<T>(List<PropertyInfo> list)
         {
-            foreach (var property in RequiredAttribute.GetRequiredProperties(type))
+            Debug.WriteLine(">" + typeof(T).Name);
+            foreach (var item in list)
             {
-                if (IsForeignKey(type,property.Name))
-                {
-                    return true;
-                }
+                Debug.WriteLine(">>>"+item.Name);
             }
-            return false;
         }
-        public static string CreateQuery<T>(string name)
+        public static void CreateQuery<T>()
         {
-            string s = null;
-            if (!CheckForeignKeyProperty(typeof(T)))
-            {
-                return s;
-            }
-            PropertyInfo info = typeof(T).GetProperty(name);
 
-          
-            else
-            {
-            }
-            return null;
         }
         public static bool Execute<T>()
         {
-            PropertyInfo info = typeof(T).GetProperty("TestingSample");
-            CreateQuery<T>(info);
-            return false;
+            //get the foreignkey what wants to search.
+           // List<PropertyInfo>  list =   DetectRelationships.GetRelationships(typeof(T), "Construction");
+           // CreateQuery<T>();
+           // Display<T>(list);
+           // return false;
 
             Excel.Application xlApplication = null;
             Excel.Worksheet xlworkSheet = null;
@@ -113,9 +101,7 @@ namespace BIMS.Utilities
             xlApplication = new Excel.Application();
             xlApplication.Visible = false;
             xlApplication.DisplayAlerts = false;
-
             xlWorkBook = xlApplication.Workbooks.Open(url);
-
             xlworkSheet = (Excel.Worksheet)xlWorkBook.Sheets[1];
             xlworkSheet.Unprotect();
 
@@ -174,41 +160,12 @@ namespace BIMS.Utilities
                     }
                     else if (IsForeignKey(typeof(T), property))// get the id  from server sql.
                     {
-                        Dictionary<string, string> excelColumnReferences = GetExcelColumnReferences(typeof(T), propertyInfo.Name);
-                        List<SqlParameter> parameters = new List<SqlParameter>();
 
-                        foreach (var item in excelColumnReferences)
+                        //　get the table and property what referenced to.
+                        if (!HandleForeignKey<T>(newObj, property, xlworkSheet, i)) 
                         {
-                            string propertyInSql = item.Key;
-                            string propertyInExcel = item.Value;
-                            string valueInCell = GetValueInCell(xlworkSheet, i, propertyInExcel);
-                            if (string.IsNullOrWhiteSpace(valueInCell))
-                            {
-                                string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", i, propertyInExcel, "Ignore", "Can't get value on this cell.");
-                                LoggingHelper.WriteDown(message);
-                                break;
-                            }
-                            else
-                            {
-                                parameters.Add(new SqlParameter(propertyInSql, valueInCell));
-                            }
-                           
-                        }
-                        string refId = GetRefId(typeof(T), propertyInfo.Name);
-                        string tableName = GetRefTable(typeof(T), propertyInfo.Name);
-                        DataSet dataSetResults = GetForeignKeyInSQL(refId, tableName, parameters);
-                        if (dataSetResults == null)
-                        {
-                            string message = string.Format("Not exist in SQL");
-                            LoggingHelper.WriteDown(message);
                             break;
                         }
-                        else
-                        {
-                            object anonymous = Utility.ParseDataWith(propertyInfo.PropertyType, dataSetResults);
-                            propertyInfo.SetValueByDataType(newObj, anonymous);
-                        }
-                        //　get the table and property what referenced to.
                     }
                     else
                     {
@@ -246,11 +203,61 @@ namespace BIMS.Utilities
                     }
                 }
             }
-
             // close the excel app.
             xlWorkBook.Close();
             xlApplication.Quit();
             return true;
+        }
+        private static bool HandleForeignKey<T>(T newObj, string property , Excel.Worksheet xlworkSheet, int row)
+        {
+            PropertyInfo propertyInfo = newObj.GetType().GetProperty(property);
+            Dictionary<string, string> excelColumnReferences = GetExcelColumnReferences(typeof(T), propertyInfo.Name);
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            foreach (var item in excelColumnReferences)
+            {
+                string propertyInSql = item.Key;
+                string propertyInExcel = item.Value;
+                if (propertyInSql.Equals("*") || propertyInExcel.Equals("*"))
+                {
+                    // 
+                    Dictionary<string, string> dicConditions = GetDistinguishConditions(typeof(T), property);
+                    foreach (var pair in dicConditions)
+                    {
+                        var valueInCell = GetValueInCell(xlworkSheet, row, pair.Value);
+                        parameters.Add(new SqlParameter(pair.Key, valueInCell));
+                    }
+                }
+                else
+                {
+                    string valueInCell = GetValueInCell(xlworkSheet, row, propertyInExcel);
+                    if (string.IsNullOrWhiteSpace(valueInCell))
+                    {
+                        string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", row, propertyInExcel, "Ignore", "Can't get value on this cell.");
+                        LoggingHelper.WriteDown(message);
+                        break;
+                    }
+                    else
+                    {
+                        parameters.Add(new SqlParameter(propertyInSql, valueInCell));
+                    }
+                }
+            }
+            string refId = GetRefId(typeof(T), propertyInfo.Name);
+            string tableName = GetRefTable(typeof(T), propertyInfo.Name);
+            DataSet dataSetResults = GetForeignKeyInSQL(refId, tableName, parameters);
+            if (dataSetResults == null)
+            {
+                string message = string.Format("Not exist in SQL");
+                LoggingHelper.WriteDown(message);
+                return false;
+            }
+            else
+            {
+                object anonymous = Utility.ParseDataWith(propertyInfo.PropertyType, dataSetResults);
+                propertyInfo.SetValueByDataType(newObj, anonymous);
+                return true;
+            }
         }
         private static object RequestToSql<T>(T parseTo)
         {
@@ -259,7 +266,7 @@ namespace BIMS.Utilities
             List<SqlParameter> parameters = new List<SqlParameter>();
             foreach (string property in requiredProperties)
             {
-               string paramName = SqlParameterAttribute.GetNameOfParameter(parseTo.GetType(), property);
+               string paramName = SqlParameterAttribute.GetNameOfParameterInSql(parseTo.GetType(), property);
                PropertyInfo propertyInfo = parseTo.GetType().GetProperty(property);
                object result = propertyInfo.GetValue(parseTo);
                if (result!=null)
@@ -382,6 +389,151 @@ namespace BIMS.Utilities
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        public static bool ExecuteMultiRecords<T>()
+        {
+            Excel.Application xlApplication = null;
+            Excel.Worksheet xlworkSheet = null;
+            Excel.Workbook xlWorkBook = null;
+            Dictionary<string, T> dicResult = new Dictionary<string, T>();
+            // the list of properties what will be increated automaticlly.
+            xlApplication = new Excel.Application();
+            xlApplication.Visible = false;
+            xlApplication.DisplayAlerts = false;
+            xlWorkBook = xlApplication.Workbooks.Open(url);
+            xlworkSheet = (Excel.Worksheet)xlWorkBook.Sheets[1];
+            xlworkSheet.Unprotect();
+            Excel.Range xlRange = xlworkSheet.UsedRange;
+
+            int startIndex = 5;
+            int numbOfRows = xlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Row;
+            int numbOfColumns = xlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Column;
+
+            Type type = typeof(T);
+            // the properties what need to get value from a excel file.
+            List<string> properties = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+            if (properties.Count == 0)
+            {
+                throw new Exception("Dont have any required property.");
+            }
+            // a mapping the name of a property and a name of column in a excel file.
+            Dictionary<string, string> columnMap = ColumnNamesMapping(typeof(T));
+            if (columnMap.Count == 0)
+            {
+                return false;
+            }
+            int numbRecords =  GetNumbOfColumnsToRead(typeof(T));
+            for (int i = startIndex; i < numbOfRows; i++)
+            {
+                Dictionary<string, string[]> mappingInExcel = ExcelColumnAttribute.GetNameOfColumnsInExcel(typeof(T));
+
+                T newObj = default(T);
+                List<T> listNewObjects = new List<T>();
+                for (int index = 0; index < numbRecords; index++)
+                {
+                    newObj = (T)Activator.CreateInstance(typeof(T));
+                    foreach (string property in properties) // properties are 
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(property);
+                        if (IsPrimaryKey(typeof(T), property)) // handling for a ForeignKey.
+                        {
+
+                        }
+                        else if(IsForeignKey(typeof(T), property)) // handling for a ForeignKey.
+                        {
+                        }
+                        else
+                        {
+                            string[] columnsInExcel = null;
+                            bool success = mappingInExcel.TryGetValue(property, out columnsInExcel); // get 
+                            if (success)
+                            {
+                                // get value in the excel file.
+                                string valueInCell = GetValueInCell(xlworkSheet, i, columnsInExcel[index]);
+                                propertyInfo.SetValueByDataType(newObj, valueInCell);
+                            }
+                            else
+                            {
+                                throw new ArgumentException("The parameters in the ExcelColumnAttribute are not correct.");
+                            }
+                        }
+                    }
+                    listNewObjects.Add(newObj);
+                }
+                listNewObjects = PreProcess<T>(listNewObjects);
+            }
+            // close the excel app.
+            xlWorkBook.Close();
+            xlApplication.Quit();
+            return true;
+        }
+        private static void SetRelationshipsForObjects<T>(List<T> list)
+        {
+            GetDistinguishTables(typeof(T),)
+            foreach (var item in list)
+            {
+
+            }
+        }
+        // eliminate records what all of paramers is null.
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        private static List<T> PreProcess<T>(List<T> list) {
+            List<T> correctItems = new List<T>(); 
+            foreach (var item in list)
+            {
+                if (!AllOfParameterIsNull(item))
+                {
+                    correctItems.Add(item);
+                }
+            }
+            return correctItems;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        private static bool AllOfParameterIsNull(object obj)
+        {
+            PropertyInfo[] properties = obj.GetType().GetProperties();
+            bool flag = false;
+            foreach (PropertyInfo p in properties)
+            {
+                if (!CheckDefaultValue(obj,p))
+                {
+                    flag = true;
+                }
+            }
+            return flag ? false : true;
+        }
+        private static bool CheckDefaultValue(object obj, PropertyInfo p)
+        {
+            if (p.PropertyType == typeof(string))
+            {
+                var obj2 = p.GetValue(obj, null);
+                return  obj2 == null;
+            }
+            else if (p.PropertyType == typeof(int))
+            {
+                var obj2 = p.GetValue(obj, null);
+                return obj2.Equals(default(int));
+            }
+            else if (p.PropertyType == typeof(double))
+            {
+                var obj2 = p.GetValue(obj, null);
+                return obj2.Equals(default(double));
+            }
+            else
+            {
+                var obj2 = p.GetValue(obj, null);
+                return obj2 == null;
             }
         }
     }

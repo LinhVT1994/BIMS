@@ -44,7 +44,7 @@ namespace BIMS.Utilities
             List<PropertyInfo> propertiesInfo= RequiredAttribute.GetRequiredProperties(type);
             foreach (PropertyInfo propertyInfo in propertiesInfo)
             {
-                string key = SqlParameterAttribute.GetNameOfParameter(type, propertyInfo.Name);
+                string key = SqlParameterAttribute.GetNameOfParameterInSql(type, propertyInfo.Name);
                 string value = dataSet.Value(key.ToLower());
                 if (value!=null)
                 {

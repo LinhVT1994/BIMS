@@ -26,7 +26,7 @@ namespace BIMS.Model
             Symbol = null;
             Name = null;
         }
-        [Required,AutoIncrement, SqlParameter("cement_id")]
+        [Required,PrimaryKey,AutoIncrement, SqlParameter("cement_id")]
         public int Cement_Id
         {
             get

@@ -49,6 +49,20 @@ namespace BIMS.Attributes
             }
             return requiredPropaties;
         }
+        public static List<PropertyInfo> GetForeignKey(Type type)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            List<PropertyInfo> requiredPropaties = new List<PropertyInfo>();
+            foreach (PropertyInfo property in properties)
+            {
+                Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(ForeignKeyAttribute), false); // get the attributes of a property.
+                if (attributes.Length > 0)
+                {
+                    requiredPropaties.Add(property); // add a attribute in the required properties.
+                }
+            }
+            return requiredPropaties;
+        }
         public static bool IsForeignKey(Type type, string name)
         {
             List<string> requiredProperties = GetForeignKeyProperties(type);
