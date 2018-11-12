@@ -129,7 +129,7 @@ namespace BIMS.Utilities
                             throw;
                         }
                     }
-                    else if(IsForeignKey(typeof(T), pName)) // is foreign key.
+                    else if (IsForeignKey(typeof(T), pName)) // is foreign key.
                     {
                         //　get the table and property what referenced to.
                         if (!HandleForForeignKey<T>(newObj, pName, row))
@@ -137,7 +137,7 @@ namespace BIMS.Utilities
                             break;
                         }
                     }
-                    else 
+                    else
                     {
                         HandleForRequiredProperty(newObj, pName, row);
                     }
@@ -216,7 +216,7 @@ namespace BIMS.Utilities
                 }
                 listNewObjects = PreProcess<T>(listNewObjects);
                 // update for foreign key properties.
-                SetRelationshipsForObjects<T>(listNewObjects,row);
+                SetRelationshipsForObjects<T>(listNewObjects, row);
                 // insert all of elements in the list to the sql.
 
             }
@@ -233,10 +233,34 @@ namespace BIMS.Utilities
         {
             foreach (var item in list)
             {
-                HandleForeignKeyPropertiesOfObject<T>(item,row);
+                HandleForeignKeyPropertiesOfObject<T>(item, row);
+            }
+            T obj = list.ElementAt(0);
+            Type type = obj.GetType();
+            int id = -1;
+            foreach (var foreignkeyName in GetForeignKeyProperties(type))
+            {
+                List<string> refTables = GetDistinguishTables(type, foreignkeyName);
+                if (refTables != null && refTables.Count > 0)
+                {
+                    PropertyInfo propertyInfo = obj.GetType().GetProperty(foreignkeyName);
+                    List<string> refTablesRelateWith = GetDistinguishTables(type, foreignkeyName);
+
+                    List<SqlParameter> sqlParameters = CreateListSqlParamenter<T>(obj, foreignkeyName, row);
+                    Dictionary<string, string> a = GetExcelColumnReferences(type, foreignkeyName);
+                    string refTable = GetRefTable(type, foreignkeyName);
+                    KeyValuePair<string, string> tableRelationInfo = CreateRelationshipsInTableSqlFromObjects(propertyInfo.PropertyType, refTablesRelateWith.ElementAt(0));
+                    string selectOptions = CreateSelectOptions(propertyInfo.PropertyType, refTable, refTablesRelateWith.ElementAt(0));
+                    DataTable recoders = GetDataFromSql(tableRelationInfo, sqlParameters, selectOptions);
+                    id = DetectKeyId<T>(recoders, obj, foreignkeyName, row);
+                }
+            }
+            foreach (var item in collection)
+            {
+
             }
         }
-        private void HandleForeignKeyPropertiesOfObject<T>(T obj,int row)
+        private void HandleForeignKeyPropertiesOfObject<T>(T obj, int row)
         {
             Type type = obj.GetType();
             foreach (var foreignkeyName in GetForeignKeyProperties(type))
@@ -245,23 +269,88 @@ namespace BIMS.Utilities
                 if (refTables == null || refTables.Count <= 0)
                 {
                     // dealing like a nomal foreign key.
-                    HandleForForeignKey<T>(obj, foreignkeyName , row);
+                    HandleForForeignKey<T>(obj, foreignkeyName, row);
+                }
+            }
+        }
+
+        public int DetectKeyId<T>(DataTable recoders, T obj, string foreignkeyName, int row)
+        {
+            Type type = obj.GetType();
+            string refId =SqlParameterAttribute.GetNameOfParameterInSql(type,GetPrimaryKey(type).Name);
+            string table = (type.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
+            PropertyInfo propertyInfo = type.GetProperty(foreignkeyName);
+            string property = (propertyInfo.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
+            PropertyInfo primaryKey =  PrimaryKeyAttribute.GetPrimaryKey(propertyInfo.PropertyType);
+            string keys =  (primaryKey.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
+            foreach (var item in recoders.GetAllRecords())
+            {
+                string id = item.Value(keys);
+                if (IsUsedPrimaryKey(table, refId, property, int.Parse(id)))
+                {
+
                 }
                 else
                 {
-                    PropertyInfo propertyInfo = obj.GetType().GetProperty(foreignkeyName);
-                    List<string> refTablesRelateWith = GetDistinguishTables(type, foreignkeyName);
-                    Dictionary<string, string> refConditions = GetDistinguishConditions(type, foreignkeyName);
-                    List<SqlParameter> sqlParameters = CreateListSqlParamenter(refConditions, row);
-                    Dictionary<string, string> a = GetExcelColumnReferences(type, foreignkeyName);
-                    KeyValuePair<string, string> tableRelationInfo =   CreateRelationshipsInTableSqlFromObjects(propertyInfo.PropertyType, refTablesRelateWith.ElementAt(0));
-                    GetDataFromSql(tableRelationInfo, sqlParameters);
-
-
-                    string refId = GetRefId(type, foreignkeyName);
-                    string refTable = GetRefTable(type, foreignkeyName);
+                    return int.Parse(id);
                 }
             }
+            return 0;
+        }
+
+        public bool IsUsedPrimaryKey(string table, string refId ,string property,object value)
+        {
+            List<SqlParameter> para = new List<SqlParameter>();
+            para.Add(new SqlParameter(property, value));
+            DataSet data = GetForeignKeyInSQL(refId, table, para);
+            if (data == null || data.Length <=0)
+            {
+                return false;
+            }
+            return true;
+        }
+        public string CreateSelectOptions<T>(T obj,string getOnTable, string toTable)
+        {
+            string selectProperties = null;
+            Type type = null;
+            if (obj is Type)
+            {
+                type = obj as Type;
+            }
+            else
+            {
+                type = obj.GetType();
+
+            }
+            List<Type> listObjects = new List<Type>();
+            List<PropertyInfo> list = DetectRelationships.GetRelationships(type, toTable);
+            foreach (var item in list)
+            {
+                listObjects.Add(item.PropertyType);
+            }
+            listObjects.Add(type);
+            string tableName = null;
+            foreach (Type typeObject in listObjects)
+            {
+                tableName = (typeObject.GetCustomAttribute(typeof(SqlParameterAttribute), false) as SqlParameterAttribute).PropertyName;
+                if (tableName!=null)
+                {
+                    if (getOnTable.ToLower().Equals(tableName.ToLower()))
+                    {
+                        foreach (string pInfo in RequiredAttribute.GetRequiredPropertiesName(typeObject))
+                        {
+                            string nameOfProperties = SqlParameterAttribute.GetNameOfParameterInSql(typeObject, pInfo);
+                            //table.name as "table.name"
+                            //  selectProperties += "," + string.Format("{0}.{1} as \"{2}.{3}\"", tableName, nameOfProperties, tableName, nameOfProperties); ;
+                            selectProperties += "," + string.Format("{0}.{1}", tableName, nameOfProperties); 
+                        }
+                    }
+                    
+                }
+               
+            }
+            selectProperties = selectProperties.TrimStart(',');
+            return selectProperties;
         }
         public KeyValuePair<string, string> CreateRelationshipsInTableSqlFromObjects<T>(T obj, string toTable)
         {
@@ -346,22 +435,38 @@ namespace BIMS.Utilities
             }
             return string.Format("{0}.{1}={2}.{3}", table, foreignKey, tableRef, primaryKey);
         }
-        public List<SqlParameter> CreateListSqlParamenter(Dictionary<string, string> refConditions, int row)
+        public List<SqlParameter> CreateListSqlParamenter<T>(T obj, string foreignkeyName, int row)
         {
+            Type type = obj.GetType();
+            Dictionary<string, string> refConditions = GetDistinguishConditions(type, foreignkeyName);
             List<SqlParameter> list = new List<SqlParameter>();
             foreach (var item in refConditions)
             {
                 string value = GetValueInCell(row, item.Value);
                 list.Add(new SqlParameter(item.Key, value));
             }
+            PropertyInfo foreignKey = type.GetProperty(foreignkeyName);
+            Type foreignKeyTableType = foreignKey.PropertyType;
+           string tableName =  (foreignKeyTableType.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
+            Dictionary<string,string>  mappingForForeignKeyTable =  ExcelColumnAttribute.ColumnNamesMapping(foreignKeyTableType);
+            foreach (var item in mappingForForeignKeyTable)
+            {
+                if (!IsForeignKey(foreignKey.PropertyType,item.Key)&& !IsPrimaryKey(foreignKeyTableType, item.Key))
+                {
+                    string value = GetValueInCell(row, item.Value);
+                    PropertyInfo p = foreignKeyTableType.GetProperty(item.Key);
+                    string nameParaInSql = SqlParameterAttribute.GetNameOfParameterInSql(foreignKeyTableType, item.Key);
+                    list.Add(new SqlParameter(tableName+"."+nameParaInSql, SetTypeForAProperty(p, value)));
+                }
+            }
             return list;
         }
-        private DataSet GetDataFromSql(KeyValuePair<string,string> connectTablesString, List<SqlParameter> sqlParameters, string getWhat = "*")
+        private DataTable GetDataFromSql(KeyValuePair<string,string> connectTablesString, List<SqlParameter> sqlParameters, string getWhat = "*")
         {
             // select * from table1,table2,table3 where parames;
             StringBuilder sqlQuery = new StringBuilder();
             string sParam = null;
-
+            DataTable resultsOfSelecting = null;
             if (sqlParameters.Count <= 0)
             {
                 return null;
@@ -375,10 +480,9 @@ namespace BIMS.Utilities
                 sParam = sParam.Remove(sParam.Length - 5);
                 sqlQuery.AppendFormat("select {0} from {1} where ({2}) and ({3})",getWhat, connectTablesString.Value, connectTablesString.Key, sParam);
                 SqlDataAccess sqlDataAccess = new SqlDataAccess();
-                var resultsOfSelecting = sqlDataAccess.ExecuteSelectMultiTables(sqlQuery.ToString(), sqlParameters.ToArray());
-              
+                resultsOfSelecting = sqlDataAccess.ExecuteSelectMultiTables(sqlQuery.ToString(), sqlParameters.ToArray());
             }
-            return null;
+            return resultsOfSelecting;
 
         }
         /// <summary>
@@ -444,6 +548,25 @@ namespace BIMS.Utilities
             {
                 var obj2 = p.GetValue(obj, null);
                 return obj2 == null;
+            }
+        }
+        private object SetTypeForAProperty(PropertyInfo p,string value)
+        {
+            if (p.PropertyType == typeof(string))
+            {
+                return value;
+            }
+            else if (p.PropertyType == typeof(int))
+            {  
+                return  int.Parse(value);
+            }
+            else if (p.PropertyType == typeof(double))
+            {
+                return double.Parse(value);
+            }
+            else
+            {
+                return null;
             }
         }
         /// <summary>

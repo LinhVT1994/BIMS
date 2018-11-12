@@ -14,7 +14,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/6
     */
-    class DataSet
+    public class DataSet
     {
         private Dictionary<string, string> dictionary = null;
         public DataSet()

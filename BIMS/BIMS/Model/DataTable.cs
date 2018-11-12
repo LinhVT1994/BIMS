@@ -16,7 +16,7 @@ namespace BIMS.Model
     * @version 1.0
     * @since   2018/11/6
     */
-    class DataTable
+   class DataTable
     {
         private readonly List<DataSet> data = null;
         public DataTable()
@@ -41,20 +41,9 @@ namespace BIMS.Model
                 data.Add(new DataSet().SetParameters(item));
             }
         }
-        public void FillFullName(NpgsqlDataReader reader)
+        public List<DataSet> GetAllRecords()
         {
-            while (reader.Read())
-            {
-               var s = reader.GetSchemaTable();
-                Dictionary<string, string> item = new Dictionary<string, string>();
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    string name = reader.GetName(i);
-                    string value = reader.GetValue(i).ToString();
-                    item.Add(name, value);
-                }
-                data.Add(new DataSet().SetParameters(item));
-            }
+            return data;
         }
         /// <summary>
         /// Get all of columns in a row.

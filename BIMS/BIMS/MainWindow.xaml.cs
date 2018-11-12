@@ -31,8 +31,9 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
+        private string _Url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-        private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+       // private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
