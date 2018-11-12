@@ -32,7 +32,7 @@ namespace BIMS
     {
         private SqlParameter param;
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-
+        private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -41,9 +41,10 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            
-            ExcelToSqlManipulation.ExecuteMultiRecords<MixingResult>();
+            ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+            excelToSql.ExecuteMultiRecords<MixingResult>();
             return;
+            ExcelToSqlManipulation.ExecuteMultiRecords<MixingResult>();
             listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>
             {
@@ -120,6 +121,7 @@ namespace BIMS
 #endif
             #endregion
         }
+        
 
         #region Methods for testing
         private void TestExcelAccess()

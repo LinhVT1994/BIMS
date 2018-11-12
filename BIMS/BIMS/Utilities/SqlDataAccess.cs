@@ -22,7 +22,7 @@ namespace BIMS.Utilities
    */
     class SqlDataAccess
     {
-        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=123456a@;Database=db_boring_data";
+        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_boring_data";
         private NpgsqlConnection _NpgsqlConnection = null;
         public SqlDataAccess()
         {
@@ -60,6 +60,39 @@ namespace BIMS.Utilities
                     NpgsqlDataReader dataReader  = command.ExecuteReader(); // execute a query to the database.
                     DataTable dataTable = new DataTable();
                     dataTable.Fill(dataReader);
+#if DEBUG
+                    Utility.StopCountingTime();
+#endif
+                    return dataTable;
+                }
+            }
+        }
+
+        public DataTable ExecuteSelectMultiTables(string query, SqlParameter[] parameters)
+        {
+#if DEBUG
+            Utility.StartCountingTime("ExecuteSelectQuery");
+#endif
+
+            using (_NpgsqlConnection = new NpgsqlConnection(_ConnectionString))// connect to the database.
+            {
+                _NpgsqlConnection.Open();
+                using (NpgsqlCommand command = new NpgsqlCommand())  // create a new command to prepare executing a query request.
+                {
+                    command.Connection = _NpgsqlConnection;
+                    command.CommandText = query;
+
+                    // add parameters for query.
+                    if (parameters != null && parameters.Length != 0)
+                    {
+                        foreach (var param in parameters)
+                        {
+                            command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                        }
+                    }
+                    NpgsqlDataReader dataReader = command.ExecuteReader(); // execute a query to the database.
+                    DataTable dataTable = new DataTable();
+                    dataTable.FillFullName(dataReader);
 #if DEBUG
                     Utility.StopCountingTime();
 #endif

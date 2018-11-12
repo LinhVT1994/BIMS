@@ -22,8 +22,8 @@ namespace BIMS.Utilities
     class ExcelToSqlManipulation
     {
 
-       // private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
-        private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+        private static string url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+       // private static string url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         public static DataSet GetForeignKeyInSQL(string idRef, string tableRef, List<SqlParameter> sqlParams)
         {
             // select * from ? where  abc = csss;
@@ -292,7 +292,7 @@ namespace BIMS.Utilities
                     }
                     else 
                     {
-                        throw new Exception("Code hasnot implement");
+                        throw new Exception("Code hasnot implemented");
                     }
                }
             }
@@ -391,7 +391,6 @@ namespace BIMS.Utilities
                 return null;
             }
         }
-
         public static bool ExecuteMultiRecords<T>()
         {
             Excel.Application xlApplication = null;
@@ -428,7 +427,6 @@ namespace BIMS.Utilities
             for (int i = startIndex; i < numbOfRows; i++)
             {
                 Dictionary<string, string[]> mappingInExcel = ExcelColumnAttribute.GetNameOfColumnsInExcel(typeof(T));
-
                 T newObj = default(T);
                 List<T> listNewObjects = new List<T>();
                 for (int index = 0; index < numbRecords; index++)
@@ -443,6 +441,7 @@ namespace BIMS.Utilities
                         }
                         else if(IsForeignKey(typeof(T), property)) // handling for a ForeignKey.
                         {
+
                         }
                         else
                         {
@@ -463,6 +462,10 @@ namespace BIMS.Utilities
                     listNewObjects.Add(newObj);
                 }
                 listNewObjects = PreProcess<T>(listNewObjects);
+                // update for foreign key properties.
+                SetRelationshipsForObjects<T>(listNewObjects);
+                // insert all of elements in the list to the sql.
+
             }
             // close the excel app.
             xlWorkBook.Close();
@@ -471,10 +474,9 @@ namespace BIMS.Utilities
         }
         private static void SetRelationshipsForObjects<T>(List<T> list)
         {
-            GetDistinguishTables(typeof(T),)
             foreach (var item in list)
             {
-
+                HandleForeignKeyPropertiesOfObject(item);
             }
         }
         // eliminate records what all of paramers is null.
@@ -494,6 +496,34 @@ namespace BIMS.Utilities
                 }
             }
             return correctItems;
+        }
+        private static void HandleForeignKeyPropertiesOfObject(object obj)
+        {
+            Type type = obj.GetType();
+           
+            foreach (var foreignkeyName in GetForeignKeyProperties(type))
+            {
+                List<string> refTables = GetDistinguishTables(type, foreignkeyName);
+                if (refTables == null || refTables.Count <= 0)
+                {
+                    List<PropertyInfo> distinguishProperties = GetDistinguishProperties(type);
+                    if (distinguishProperties == null || distinguishProperties.Count <= 0)
+                    {
+                        // dealing like a nomal foreign key.
+                    }
+                    else
+                    {
+                        List<string> refTablesRelateWith = GetDistinguishTables(type, foreignkeyName);
+                        Dictionary<string, string> refConditions = GetDistinguishConditions(type, foreignkeyName);
+
+                    }
+                }
+                else
+                {
+
+                }
+            }
+            
         }
         /// <summary>
         /// 

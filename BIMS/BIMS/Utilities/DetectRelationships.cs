@@ -19,7 +19,7 @@ namespace BIMS.Utilities
         private void Execute(Type type, string condition)
         {
             List<string> foreignkeys = GetForeignKeyProperties(type);
-            if (foreignkeys.Count <= 0 || type.Name.Equals(condition))
+            if (foreignkeys.Count <= 0 || type.Name.ToLower().Equals(condition.ToLower()))
             {
                 return;
             }
@@ -28,7 +28,7 @@ namespace BIMS.Utilities
                 stack.Push(item);
                 Execute(item.PropertyType, condition);
 
-                if (item.Name.Equals(condition)) // tra ve list kq
+                if (item.Name.ToLower().Equals(condition.ToLower())) // tra ve list kq
                 {
                     foreach (var v in stack)
                     {

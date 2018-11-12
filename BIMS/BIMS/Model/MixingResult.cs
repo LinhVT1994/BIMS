@@ -98,7 +98,7 @@ namespace BIMS.Model
         //[Required, ExcelColumn("G"), SqlParameter("testing_sample_id")]
         [Required, 
          SqlParameter("testing_sample_id"), 
-         Distinguish("[construction.construction_no(E)"), 
+         Distinguish("[construction.construction_no(E)]"), 
          ForeignKey("testing_sample", "*[*]=>testing_sample_id")]
         public TestingSample TestingSample
         {

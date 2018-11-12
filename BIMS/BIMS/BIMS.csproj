@@ -95,6 +95,7 @@
     <Compile Include="Model\TestingSample.cs" />
     <Compile Include="Utilities\DetectRelationships.cs" />
     <Compile Include="Utilities\ExcelToSqlManipulation.cs" />
+    <Compile Include="Utilities\ExcelToSqlManipulationEdition.cs" />
     <Compile Include="Utilities\SqlDataAccess.cs" />
     <Compile Include="Utilities\ExcelDataAccess.cs" />
     <Compile Include="Utilities\LoggingHelper.cs" />

@@ -15,6 +15,8 @@ namespace BIMS.Attributes
         //[construction.construction_no(E),testing_sample.name(X),testing_sample.Color(Y),testing_sample.description(M)]
         public DistinguishAttribute(string s)
         {
+            s = s.TrimStart('[');
+            s = s.TrimEnd(']');
             string[] array = s.Split(',');
             if (array.Length==0)
             {
@@ -48,7 +50,22 @@ namespace BIMS.Attributes
             }
             return null;
         }
-
+        public static List<PropertyInfo> GetDistinguishProperties(Type type)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            List<PropertyInfo> result = new List<PropertyInfo>();
+            List<string> table = new List<string>();
+            foreach (PropertyInfo property in properties)
+            {
+               
+                    Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(DistinguishAttribute), false); // get the attributes of a property.
+                    if (attributes.Length > 0)
+                    {
+                         result.Add(property);
+                    }
+            }
+            return result;
+        }
         public static Dictionary<string, string> GetDistinguishConditions(Type type,string propertyName)
         {
             PropertyInfo[] properties = type.GetProperties();

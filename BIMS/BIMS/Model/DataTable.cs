@@ -41,6 +41,21 @@ namespace BIMS.Model
                 data.Add(new DataSet().SetParameters(item));
             }
         }
+        public void FillFullName(NpgsqlDataReader reader)
+        {
+            while (reader.Read())
+            {
+               var s = reader.GetSchemaTable();
+                Dictionary<string, string> item = new Dictionary<string, string>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    string name = reader.GetName(i);
+                    string value = reader.GetValue(i).ToString();
+                    item.Add(name, value);
+                }
+                data.Add(new DataSet().SetParameters(item));
+            }
+        }
         /// <summary>
         /// Get all of columns in a row.
         /// </summary>
