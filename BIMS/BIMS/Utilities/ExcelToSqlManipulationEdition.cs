@@ -101,7 +101,7 @@ namespace BIMS.Utilities
                     PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
                     if (IsPrimaryKey(typeof(T), pName)) // is primany key.
                     {
-                        if (!IsAutoIncrement(typeof(T), pName))
+                        if (IsAutoIncrement(typeof(T), pName))
                         {
                             if (!hasALeastOneUnique)
                             {
@@ -231,13 +231,21 @@ namespace BIMS.Utilities
         /// <param name="list">The list of items want to update.</param>
         private void SetRelationshipsForObjects<T>(List<T> list, int row)
         {
+            if (list == null || list.Count <=0)
+            {
+                return;
+            }
+            // In the is not a directly forieign key.
             foreach (var item in list)
             {
                 HandleForeignKeyPropertiesOfObject<T>(item, row);
             }
+
+            // In the is not a directly forieign key.
             T obj = list.ElementAt(0);
             Type type = obj.GetType();
-            int id = -1;
+            DataSet resultForForeignkey = null;
+            string usingForeignKey = null;
             foreach (var foreignkeyName in GetForeignKeyProperties(type))
             {
                 List<string> refTables = GetDistinguishTables(type, foreignkeyName);
@@ -245,20 +253,37 @@ namespace BIMS.Utilities
                 {
                     PropertyInfo propertyInfo = obj.GetType().GetProperty(foreignkeyName);
                     List<string> refTablesRelateWith = GetDistinguishTables(type, foreignkeyName);
-
                     List<SqlParameter> sqlParameters = CreateListSqlParamenter<T>(obj, foreignkeyName, row);
                     Dictionary<string, string> a = GetExcelColumnReferences(type, foreignkeyName);
                     string refTable = GetRefTable(type, foreignkeyName);
+                    string primaryKeyInForeignObject = (GetPrimaryKey(propertyInfo.PropertyType).GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
                     KeyValuePair<string, string> tableRelationInfo = CreateRelationshipsInTableSqlFromObjects(propertyInfo.PropertyType, refTablesRelateWith.ElementAt(0));
                     string selectOptions = CreateSelectOptions(propertyInfo.PropertyType, refTable, refTablesRelateWith.ElementAt(0));
-                    DataTable recoders = GetDataFromSql(tableRelationInfo, sqlParameters, selectOptions);
-                    id = DetectKeyId<T>(recoders, obj, foreignkeyName, row);
+                    DataTable recoders = GetDataFromSql(tableRelationInfo, sqlParameters, primaryKeyInForeignObject, selectOptions);
+                    resultForForeignkey = DetectKeyId<T>(recoders, obj, foreignkeyName, row);
+                    usingForeignKey = foreignkeyName;
                 }
             }
-            foreach (var item in collection)
+            if (resultForForeignkey==null|| resultForForeignkey.Length <= 0)
             {
-
+                // log the recoder is error
             }
+            else
+            {
+                InsertManyRecodersToSql(list, usingForeignKey, resultForForeignkey);
+            }
+        }
+
+        private void InsertManyRecodersToSql<T>(List<T> listOfElements,string property,DataSet foreignRecoder)
+        {
+            foreach (var e in listOfElements)
+            {
+                PropertyInfo propertyInfo = e.GetType().GetProperty(property);
+                object anonymous =  Utilities.Utility.ParseDataWith(propertyInfo.PropertyType, foreignRecoder);
+                propertyInfo.SetValueByDataType(e, anonymous);
+                RequestToSql<T>(e);
+            }
+              //..
         }
         private void HandleForeignKeyPropertiesOfObject<T>(T obj, int row)
         {
@@ -274,7 +299,7 @@ namespace BIMS.Utilities
             }
         }
 
-        public int DetectKeyId<T>(DataTable recoders, T obj, string foreignkeyName, int row)
+        public DataSet DetectKeyId<T>(DataTable recoders, T obj, string foreignkeyName, int row)
         {
             Type type = obj.GetType();
             string refId =SqlParameterAttribute.GetNameOfParameterInSql(type,GetPrimaryKey(type).Name);
@@ -292,10 +317,10 @@ namespace BIMS.Utilities
                 }
                 else
                 {
-                    return int.Parse(id);
+                    return item;
                 }
             }
-            return 0;
+            return null;
         }
 
         public bool IsUsedPrimaryKey(string table, string refId ,string property,object value)
@@ -443,11 +468,20 @@ namespace BIMS.Utilities
             foreach (var item in refConditions)
             {
                 string value = GetValueInCell(row, item.Value);
-                list.Add(new SqlParameter(item.Key, value));
+                object temp = null;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    temp = DBNull.Value;
+                }
+                else
+                {
+                    temp = value.Trim();
+                }
+                list.Add(new SqlParameter(item.Key, temp));
             }
             PropertyInfo foreignKey = type.GetProperty(foreignkeyName);
             Type foreignKeyTableType = foreignKey.PropertyType;
-           string tableName =  (foreignKeyTableType.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
+            string tableName =  (foreignKeyTableType.GetCustomAttributes(typeof(SqlParameterAttribute), false)[0] as SqlParameterAttribute).PropertyName;
             Dictionary<string,string>  mappingForForeignKeyTable =  ExcelColumnAttribute.ColumnNamesMapping(foreignKeyTableType);
             foreach (var item in mappingForForeignKeyTable)
             {
@@ -456,12 +490,12 @@ namespace BIMS.Utilities
                     string value = GetValueInCell(row, item.Value);
                     PropertyInfo p = foreignKeyTableType.GetProperty(item.Key);
                     string nameParaInSql = SqlParameterAttribute.GetNameOfParameterInSql(foreignKeyTableType, item.Key);
-                    list.Add(new SqlParameter(tableName+"."+nameParaInSql, SetTypeForAProperty(p, value)));
+                    list.Add(new SqlParameter(tableName+"."+nameParaInSql, SetTypeForAProperty(p, value)==null?DBNull.Value : SetTypeForAProperty(p, value)));
                 }
             }
             return list;
         }
-        private DataTable GetDataFromSql(KeyValuePair<string,string> connectTablesString, List<SqlParameter> sqlParameters, string getWhat = "*")
+        private DataTable GetDataFromSql(KeyValuePair<string,string> connectTablesString, List<SqlParameter> sqlParameters,string orderBy, string getWhat = "*")
         {
             // select * from table1,table2,table3 where parames;
             StringBuilder sqlQuery = new StringBuilder();
@@ -478,7 +512,7 @@ namespace BIMS.Utilities
                     sParam += para.ParameterName + "=@" + para.ParameterName + " and ";
                 }
                 sParam = sParam.Remove(sParam.Length - 5);
-                sqlQuery.AppendFormat("select {0} from {1} where ({2}) and ({3})",getWhat, connectTablesString.Value, connectTablesString.Key, sParam);
+                sqlQuery.AppendFormat("select {0} from {1} where ({2}) and ({3}) ORDER BY {4} ASC", getWhat, connectTablesString.Value, connectTablesString.Key, sParam, orderBy);
                 SqlDataAccess sqlDataAccess = new SqlDataAccess();
                 resultsOfSelecting = sqlDataAccess.ExecuteSelectMultiTables(sqlQuery.ToString(), sqlParameters.ToArray());
             }
@@ -552,17 +586,37 @@ namespace BIMS.Utilities
         }
         private object SetTypeForAProperty(PropertyInfo p,string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
             if (p.PropertyType == typeof(string))
             {
                 return value;
             }
             else if (p.PropertyType == typeof(int))
-            {  
-                return  int.Parse(value);
+            {
+                int rs;
+                if (int.TryParse(value, out rs))
+                {
+                    return rs;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else if (p.PropertyType == typeof(double))
             {
-                return double.Parse(value);
+                double rs;
+                if (double.TryParse(value, out rs))
+                {
+                    return rs;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {

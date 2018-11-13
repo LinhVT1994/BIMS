@@ -22,7 +22,7 @@ namespace BIMS.Utilities
    */
     class SqlDataAccess
     {
-        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=123456a@;Database=db_boring_data";
+        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_boring_data";
         private NpgsqlConnection _NpgsqlConnection = null;
         public SqlDataAccess()
         {
@@ -87,7 +87,15 @@ namespace BIMS.Utilities
                     {
                         foreach (var param in parameters)
                         {
-                            command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            if (param.Value == DBNull.Value)
+                            {
+                                command.Parameters.AddWithValue(param.ParameterName, DBNull.Value);
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            }
+                            
                         }
                     }
                     NpgsqlDataReader dataReader = command.ExecuteReader(); // execute a query to the database.

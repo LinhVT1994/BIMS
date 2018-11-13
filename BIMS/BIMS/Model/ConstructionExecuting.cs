@@ -45,7 +45,7 @@ namespace BIMS.Model
                 _Construction_Executing_Id = value;
             }
         }
-        [Required, SqlParameter("cement_amount")]
+        [Required, ExcelColumn("AP"), SqlParameter("cement_amount")]
         public double Cement_Amount
         {
             get
@@ -57,7 +57,7 @@ namespace BIMS.Model
                 _Cement_Amount = value;
             }
         }
-        [Required, SqlParameter("archived_strength")]
+        [Required, ExcelColumn("AN"), SqlParameter("archived_strength")]
         public double Archived_Strength
         {
             get
@@ -81,7 +81,10 @@ namespace BIMS.Model
                 _Cement = value;
             }
         }
-        [Required, ExcelColumn("G"), ForeignKey("position", "name[G]=>position_id"), SqlParameter("testing_sample_id")]
+        [Required,
+         SqlParameter("testing_sample_id"),
+         Distinguish("[construction.construction_no(E)]"),
+         ForeignKey("testing_sample", "*[*]=>testing_sample_id")]
         public TestingSample TestingSample
         {
             get

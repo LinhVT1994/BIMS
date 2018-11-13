@@ -31,9 +31,9 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-        private string _Url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+       // private string _Url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-       // private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -42,15 +42,19 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
-            excelToSql.ExecuteMultiRecords<MixingResult>();
-            return;
-            ExcelToSqlManipulation.ExecuteMultiRecords<MixingResult>();
             listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>
             {
-                return ExcelToSqlManipulation.Execute<Position>();
-                
+                ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                try
+                {
+                    excelToSql.Execute<Position>();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }).ContinueWith<bool>((theFirstTask)=> {
                 if (theFirstTask.Result)
                 {
@@ -60,7 +64,17 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to Construction table...");
                         listInformation.Items.Refresh();
                     }));
-                    return ExcelToSqlManipulation.Execute<Construction>();
+
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.Execute<Construction>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
@@ -75,7 +89,16 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to Cement table...");
                         listInformation.Items.Refresh();
                     }));
-                    return ExcelToSqlManipulation.Execute<Cement>();
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.Execute<Cement>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
@@ -90,12 +113,84 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to TestingSample table...");
                         listInformation.Items.Refresh();
                     }));
-                    return ExcelToSqlManipulation.Execute<TestingSample>();
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.Execute<TestingSample>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
                     return false;
                 }
+            }).ContinueWith<bool>((theFirstTask) => {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Refresh();
+                        listInformation.Items.Add("Updating data to Cement table is success!");
+                        listInformation.Items.Add("Starting updating data to MixingResult table...");
+                    }));
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.ExecuteMultiRecords<MixingResult>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }).ContinueWith<bool>((theFirstTask) => {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Refresh();
+                        listInformation.Items.Add("Updating data to Cement table is success!");
+                        listInformation.Items.Add("Starting updating data to ConstructionExecuting table...");
+                    }));
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.ExecuteMultiRecords<ConstructionExecuting>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }).ContinueWith<bool>((theFirstTask) => {
+                if (theFirstTask.Result)
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Refresh();
+                        listInformation.Items.Add("Updating data to ConstructionExecuting table is success!");
+                        listInformation.Items.Add("Starting updating data to QualityTesting table...");
+                    }));
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                    try
+                    {
+                        excelToSql.ExecuteMultiRecords<QualityTesting>();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
+                return false;
             }).ContinueWith<bool>((theFirstTask)=> {
                 if (theFirstTask.Result)
                 {
@@ -105,6 +200,14 @@ namespace BIMS
                         listInformation.Items.Add("All of the tables has updated successfuly!");
                     }));
                     return true;
+                }
+                else
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        listInformation.Items.Refresh();
+                        listInformation.Items.Add("Has something error. I am so sorry about that.");
+                    }));
                 }
                 return false;
             });
