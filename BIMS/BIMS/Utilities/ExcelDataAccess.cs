@@ -87,8 +87,6 @@ namespace BIMS.Utilities
 
             xlworkSheet = (Excel.Worksheet)xlWorkBook.Sheets[1];
             xlworkSheet.Unprotect();
-
-
             int id = 1;
             int startIndex = 5;
             Excel.Range xlRange = xlworkSheet.UsedRange;
