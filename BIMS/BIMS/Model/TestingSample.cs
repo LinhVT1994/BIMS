@@ -106,7 +106,8 @@ namespace BIMS.Model
                 _TagetStrength = value;
             }
         }
-        [Required, ExcelColumn("E"), ForeignKey("construction", "construction_no[E]=>construction_id"), SqlParameter("construction_id")]
+        [Required, ExcelColumn("E"), 
+            ForeignKey("construction", "construction_no[E]=>construction_id"), SqlParameter("construction_id")]
         public Construction Construction
         {
             get

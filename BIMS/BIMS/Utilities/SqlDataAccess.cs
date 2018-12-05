@@ -9,7 +9,7 @@ using System.Windows;
 using System.Diagnostics;
 using BIMS.Model;
 using BIMS.Attributes;
-
+using System.Configuration;
 namespace BIMS.Utilities
 {
     /**
@@ -26,7 +26,7 @@ namespace BIMS.Utilities
         private NpgsqlConnection _NpgsqlConnection = null;
         public SqlDataAccess()
         {
-
+            _ConnectionString = ConfigurationManager.ConnectionStrings["SqlConnection"].ConnectionString;
         }
         /// <summary>
         /// Execute a select query to a database.
@@ -170,6 +170,5 @@ namespace BIMS.Utilities
                 }
             }
         }
-
     }
 }

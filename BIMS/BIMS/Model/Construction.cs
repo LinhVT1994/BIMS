@@ -74,6 +74,5 @@ namespace BIMS.Model
                 _Position = value;
             }
         }
-
     }
 }

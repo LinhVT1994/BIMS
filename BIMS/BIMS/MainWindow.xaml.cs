@@ -33,7 +33,7 @@ namespace BIMS
         private SqlParameter param;
        // private string _Url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-        private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -45,9 +45,13 @@ namespace BIMS
             listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>
             {
-                ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    ShowProcessingSign();
+                }));
                 try
                 {
+                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     excelToSql.Execute<Position>();
                     return true;
                 }
@@ -68,7 +72,8 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
-                        excelToSql.Execute<Construction>();
+                       excelToSql.Execute<Construction>();
+                        return false;
                         return true;
                     }
                     catch (Exception)
@@ -92,7 +97,7 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
-                        excelToSql.Execute<Cement>();
+                       excelToSql.Execute<Cement>();
                         return true;
                     }
                     catch (Exception)
@@ -198,6 +203,7 @@ namespace BIMS
                     {
                         listInformation.Items.Refresh();
                         listInformation.Items.Add("All of the tables has updated successfuly!");
+                        HiddenProcessingSign();
                     }));
                     return true;
                 }
@@ -207,11 +213,14 @@ namespace BIMS
                     {
                         listInformation.Items.Refresh();
                         listInformation.Items.Add("Has something error. I am so sorry about that.");
+                        HiddenProcessingSign();
                     }));
                 }
+     
                 return false;
             });
             listInformation.Items.Refresh();
+           
             #region Code statements for testing.
 
 #if (DEBUG && TESTTED)
@@ -225,7 +234,18 @@ namespace BIMS
 #endif
             #endregion
         }
-        
+        public void ShowProcessingSign()
+        {
+            blurGrid.Visibility = Visibility.Visible;
+            progressBar.Visibility = Visibility.Visible;
+            waitMessage.Visibility = Visibility.Visible;
+        }
+        public void HiddenProcessingSign()
+        {
+            blurGrid.Visibility = Visibility.Hidden;
+            progressBar.Visibility = Visibility.Hidden;
+            waitMessage.Visibility = Visibility.Hidden;
+        }
 
         #region Methods for testing
         private void TestExcelAccess()
