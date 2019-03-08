@@ -82,7 +82,10 @@ namespace BIMS.Model
                 _Wet_Density = value;
             }
         }
-        [Required, SqlParameter("cement_id"), ForeignKey("cement", "symbol[I]=>cement_id")]
+        [Required,
+         SqlParameter("cement_id"),
+         ForeignKey("cement", "symbol[I]=>cement_id"),
+         Distinguish("[cement.symbol(I)]")]
         public Cement Cement
         {
             get

@@ -31,9 +31,9 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-       // private string _Url = @"C:\Users\VuLin\Desktop\TestData.xlsx";
+       private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-        private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
+       // private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -51,6 +51,7 @@ namespace BIMS
                 }));
                 try
                 {
+                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     excelToSql.Execute<Position>();
                     return true;
@@ -62,18 +63,18 @@ namespace BIMS
             }).ContinueWith<bool>((theFirstTask)=> {
                 if (theFirstTask.Result)
                 {
+
                     this.Dispatcher.Invoke((Action)(() =>
                     {
                         listInformation.Items.Add("Updating data to Position table is success!");
                         listInformation.Items.Add("Starting updating data to Construction table...");
                         listInformation.Items.Refresh();
                     }));
-
+                     return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
                        excelToSql.Execute<Construction>();
-                        return false;
                         return true;
                     }
                     catch (Exception)
@@ -86,6 +87,7 @@ namespace BIMS
                     return false;
                 }
             }).ContinueWith<bool>((theFirstTask) => {
+                return true;
                 if (theFirstTask.Result)
                 {
                     this.Dispatcher.Invoke((Action)(() =>
@@ -93,7 +95,9 @@ namespace BIMS
                         listInformation.Items.Add("Updating data to Construction table is success!");
                         listInformation.Items.Add("Starting updating data to Cement table...");
                         listInformation.Items.Refresh();
+                        
                     }));
+                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
@@ -118,6 +122,7 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to TestingSample table...");
                         listInformation.Items.Refresh();
                     }));
+                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {

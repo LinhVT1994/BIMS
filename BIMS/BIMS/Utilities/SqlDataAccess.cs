@@ -22,7 +22,7 @@ namespace BIMS.Utilities
    */
     class SqlDataAccess
     {
-        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_boring_data";
+        private  readonly string  _ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=LinhVTTest";
         private NpgsqlConnection _NpgsqlConnection = null;
         public SqlDataAccess()
         {
