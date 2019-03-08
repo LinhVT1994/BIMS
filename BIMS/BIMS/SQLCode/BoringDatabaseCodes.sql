@@ -497,3 +497,76 @@ alter table "quality_testing"
 add constraint fk_quality_testing_executing
 foreign key (construction_executing_id)
 references construction_executing(construction_executing_id);
+
+
+
+
+
+
+DROP TABLE IF EXISTS
+   "users"
+;
+DROP TABLE IF EXISTS
+   "permission_group"
+;
+DROP TABLE IF EXISTS
+   "department"
+;
+
+CREATE TABLE department(
+    department_id SERIAL,
+    department_name varchar(255),
+	constraint pk_department primary key(department_id)
+);
+
+CREATE TABLE "users"(
+    user_id SERIAL,
+    user_name varchar(255),
+    user_email varchar(255),
+	user_password varchar(400),
+    department_id int,
+	permission_group_id int,
+	constraint pk_user primary key(user_id)
+);
+
+CREATE TABLE permission_group(
+    permission_group_id SERIAL,
+    permission_group_name varchar(255),
+	allow_boring_data_management BOOLEAN,
+	allow_test_result_in_lab_management BOOLEAN,
+	allow_quality_of_tnf_management BOOLEAN,
+	allow_others_management BOOLEAN,
+	allow_view BOOLEAN,
+	allow_user_management BOOLEAN,
+	allow_report_generator BOOLEAN,
+	allow_system_setting_management BOOLEAN,
+	constraint pk_permission_group primary key(permission_group_id)
+);
+
+alter table "users"
+add constraint fk_user_department
+foreign key (department_id)
+references department(department_id);
+
+alter table "users"
+add constraint fk_user_permission_group
+foreign key (permission_group_id)
+references permission_group(permission_group_id);
+
+
+insert into department(department_name)
+VALUES
+('設計'),
+('営業'),
+('施工A'),
+('現場'),
+('試験室');
+
+insert into permission_group(permission_group_name,allow_boring_data_management,allow_test_result_in_lab_management,allow_quality_of_tnf_management,allow_others_management,allow_view,allow_user_management,allow_report_generator,allow_system_setting_management)
+VALUES
+('Administrator',true,true,true,true,true,true,true,true);
+insert into "users"(user_name,user_email,user_password,department_id,permission_group_id)
+VALUES
+('Admin','vulinh.hust@gmail.com','123456a@',1,1),
+('LinhVT','vulinh.hut@gmail.com','vutuanlinh',1,1);
+
