@@ -31,7 +31,7 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-       private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+       private string _Url = @"C:\Users\vulin\Desktop\Workspace\BIMS\BIMS\BIMS\BIMS\TestData.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
        // private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
@@ -42,16 +42,26 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
+            ExcelToSqlManipulationEdition excelToSql1 = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+            try
+            {
+                excelToSql1.ExecuteMultiRecords<MixingResult>();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return;
             listInformation.Items.Add("Starting updating data to Position table...");
             Task<bool> task1 = Task<bool>.Run(() =>
             {
+                return true;
                 this.Dispatcher.Invoke((Action)(() =>
                 {
                     ShowProcessingSign();
                 }));
                 try
                 {
-                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     excelToSql.Execute<Position>();
                     return true;
@@ -61,6 +71,7 @@ namespace BIMS
                     return false;
                 }
             }).ContinueWith<bool>((theFirstTask)=> {
+                return true;
                 if (theFirstTask.Result)
                 {
 
@@ -70,7 +81,6 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to Construction table...");
                         listInformation.Items.Refresh();
                     }));
-                     return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
@@ -97,7 +107,6 @@ namespace BIMS
                         listInformation.Items.Refresh();
                         
                     }));
-                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
@@ -114,6 +123,7 @@ namespace BIMS
                     return false;
                 }
             }).ContinueWith<bool>((theFirstTask) => {
+                return true;
                 if (theFirstTask.Result)
                 {
                     this.Dispatcher.Invoke((Action)(() =>
@@ -122,7 +132,6 @@ namespace BIMS
                         listInformation.Items.Add("Starting updating data to TestingSample table...");
                         listInformation.Items.Refresh();
                     }));
-                    return true;
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {

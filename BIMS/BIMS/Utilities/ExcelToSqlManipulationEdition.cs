@@ -218,6 +218,11 @@ namespace BIMS.Utilities
                 // update for foreign key properties.
                 SetRelationshipsForObjects<T>(listNewObjects, row);
                 // insert all of elements in the list to the sql.
+                foreach (var obj in listNewObjects)
+                {
+                    // set value for 
+                    RequestToSql<T>(obj);
+                }
 
             }
             // close the excel app.
@@ -253,6 +258,15 @@ namespace BIMS.Utilities
                     string selectOptions = CreateSelectOptions(propertyInfo.PropertyType, refTable, refTablesRelateWith.ElementAt(0));
                     DataTable recoders = GetDataFromSql(tableRelationInfo, sqlParameters, selectOptions);
                     id = DetectKeyId<T>(recoders, obj, foreignkeyName, row);
+
+                    foreach (var item in list)
+                    {
+                        PropertyInfo property = item.GetType().GetProperty(foreignkeyName);
+                        if (property != null)
+                        {
+                            property.SetValueByDataType(item, id);
+                        }
+                    }
                 }
             }
         }
@@ -471,10 +485,20 @@ namespace BIMS.Utilities
             {
                 foreach (SqlParameter para in sqlParameters)
                 {
-                    sParam += para.ParameterName + "=@" + para.ParameterName + " and ";
+                    if (para.Value != null)
+                    {
+                        sParam += para.ParameterName + "=@" + para.ParameterName + " and ";
+                    }
+                    else
+                    {
+                        sParam += para.ParameterName + " is null and ";
+                    }
+                   
                 }
                 sParam = sParam.Remove(sParam.Length - 5);
                 sqlQuery.AppendFormat("select {0} from {1} where ({2}) and ({3})",getWhat, connectTablesString.Value, connectTablesString.Key, sParam);
+
+
                 SqlDataAccess sqlDataAccess = new SqlDataAccess();
                 resultsOfSelecting = sqlDataAccess.ExecuteSelectMultiTables(sqlQuery.ToString(), sqlParameters.ToArray());
             }

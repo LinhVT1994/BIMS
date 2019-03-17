@@ -84,8 +84,7 @@ namespace BIMS.Model
         }
         [Required,
          SqlParameter("cement_id"),
-         ForeignKey("cement", "symbol[I]=>cement_id"),
-         Distinguish("[cement.symbol(I)]")]
+         ForeignKey("cement", "symbol[I]=>cement_id")]
         public Cement Cement
         {
             get

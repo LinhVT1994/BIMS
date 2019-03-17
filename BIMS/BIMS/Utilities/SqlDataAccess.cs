@@ -87,9 +87,9 @@ namespace BIMS.Utilities
                     {
                         foreach (var param in parameters)
                         {
-                            if (param.Value == DBNull.Value)
+                            if (param.Value == DBNull.Value || param.Value == null)
                             {
-                                command.Parameters.AddWithValue(param.ParameterName, DBNull.Value);
+
                             }
                             else
                             {
@@ -98,9 +98,17 @@ namespace BIMS.Utilities
                             
                         }
                     }
-                    NpgsqlDataReader dataReader = command.ExecuteReader(); // execute a query to the database.
                     DataTable dataTable = new DataTable();
-                    dataTable.Fill(dataReader);
+                    try
+                    {
+                        NpgsqlDataReader dataReader = command.ExecuteReader(); // execute a query to the database.
+                        dataTable.Fill(dataReader);
+                    }
+                    catch (Exception e)
+                    {
+
+                        throw e;
+                    }
 #if DEBUG
                     Utility.StopCountingTime();
 #endif
