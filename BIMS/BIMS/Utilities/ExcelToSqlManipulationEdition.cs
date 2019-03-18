@@ -203,8 +203,17 @@ namespace BIMS.Utilities
                             if (success)
                             {
                                 // get value in the excel file.
-                                string valueInCell = GetValueInCell(row, columnsInExcel[index]);
-                                propertyInfo.SetValueByDataType(newObj, valueInCell);
+                                try
+                                {
+                                    string valueInCell = GetValueInCell(row, columnsInExcel[index]);
+                                    propertyInfo.SetValueByDataType(newObj, valueInCell);
+                                }
+                                catch (Exception e)
+                                {
+
+                                    throw e;
+                                }
+                             
                             }
                             else
                             {
@@ -215,13 +224,34 @@ namespace BIMS.Utilities
                     listNewObjects.Add(newObj);
                 }
                 listNewObjects = PreProcess<T>(listNewObjects);
+                if (listNewObjects == null || listNewObjects.Count <= 0)
+                {
+                    continue;
+                }
                 // update for foreign key properties.
-                SetRelationshipsForObjects<T>(listNewObjects, row);
+                try
+                {
+                    SetRelationshipsForObjects<T>(listNewObjects, row);
+                }
+                catch (Exception e)
+                {
+
+                    throw e;
+                }
+                
                 // insert all of elements in the list to the sql.
                 foreach (var obj in listNewObjects)
                 {
                     // set value for 
-                    RequestToSql<T>(obj);
+                    try
+                    {
+                        RequestToSql<T>(obj);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.Message);
+                    }
+                 
                 }
 
             }
@@ -257,8 +287,11 @@ namespace BIMS.Utilities
                     KeyValuePair<string, string> tableRelationInfo = CreateRelationshipsInTableSqlFromObjects(propertyInfo.PropertyType, refTablesRelateWith.ElementAt(0));
                     string selectOptions = CreateSelectOptions(propertyInfo.PropertyType, refTable, refTablesRelateWith.ElementAt(0));
                     DataTable recoders = GetDataFromSql(tableRelationInfo, sqlParameters, selectOptions);
+                    if (recoders == null)
+                    {
+                        Utilities.LoggingHelper.WriteDown("Something error in : " + row);
+                    }
                     id = DetectKeyId<T>(recoders, obj, foreignkeyName, row);
-
                     foreach (var item in list)
                     {
                         PropertyInfo property = item.GetType().GetProperty(foreignkeyName);
@@ -503,7 +536,6 @@ namespace BIMS.Utilities
                 resultsOfSelecting = sqlDataAccess.ExecuteSelectMultiTables(sqlQuery.ToString(), sqlParameters.ToArray());
             }
             return resultsOfSelecting;
-
         }
         /// <summary>
         /// remove elements what have not been set value yet.
@@ -574,14 +606,23 @@ namespace BIMS.Utilities
         {
             if (p.PropertyType == typeof(string))
             {
+
                 return value;
             }
             else if (p.PropertyType == typeof(int))
-            {  
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return default(int);
+                }
                 return  int.Parse(value);
             }
             else if (p.PropertyType == typeof(double))
             {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return default(double);
+                }
                 return double.Parse(value);
             }
             else
@@ -800,6 +841,10 @@ namespace BIMS.Utilities
                         {
                             string refId = ForeignKeyAttribute.GetRefId(typeof(T), property);
                             object data = GetPrimaryKeyValue(paramValue);
+                            if (data == null || ((int)data)  <=0 )
+                            {
+                                return -1;
+                            }
                             parameters.Add(new SqlParameter(paramName, data));
                         }
                         else
