@@ -103,6 +103,10 @@ DROP TABLE IF EXISTS
 DROP TABLE IF EXISTS
    soil_type
 ;
+
+DROP VIEW IF EXISTS
+SearchingFullText
+;
 --------------------------4. construction（工事）---------------------------
 DROP TABLE IF EXISTS
    construction
@@ -124,6 +128,10 @@ DROP TABLE IF EXISTS
 DROP TABLE IF EXISTS
    position
 ;
+DROP TABLE IF EXISTS
+   "regions"
+;
+
 /*
 -------------------------------------------------------------------------
 -- Create a new database.
@@ -135,10 +143,22 @@ TEMPLATE = template1            -- use template1 as a template.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
 */
+CREATE TABLE regions(
+    region_id SERIAL,
+    region_name varchar(255),
+    region_name_roman varchar(255),
+	region_level int,
+	region_group_code int,
+	zip_code  varchar(10),
+	region_parent_id int,
+	constraint pk_region primary key(region_id)
+);
+
  -- 1.Create a "position" table with its properties
  CREATE TABLE "position"(
-	position_id SERIAL ,      
-	name varchar(200),        -- 住所
+	position_id SERIAL , 
+	region_id int,
+	name varchar(200),        -- Detail
     latitude  varchar(50),    -- 緯度
     longitude  varchar(50),   -- 軽度
 	constraint pk_position primary key(position_id)
@@ -397,6 +417,15 @@ CREATE TABLE "soil_result"(
 
  -------------------------------------------------------------------------
  -------------------------------------------------------------------------
+alter table "regions"
+add constraint pk_region_parent
+foreign key (region_parent_id)
+references regions(region_id);
+
+alter table "position"
+add constraint pk_region_position
+foreign key (region_id)
+references regions(region_id);
 
 -- add a foreign key constraint to an existing rate.
 
@@ -499,10 +528,18 @@ foreign key (construction_executing_id)
 references construction_executing(construction_executing_id);
 
 
+ CREATE VIEW SearchingFullText AS
+		select construction_id,construction.name as construction_name,construction.construction_no, position.name address, construction.name || ' '|| construction.construction_no ||' '|| string_agg(position.name, ' ') as doc
+		from "position"
+		inner join construction using(position_id) 
+		group by construction_id,construction.name,construction.construction_no, position.name
+		order by construction_id;
 
-
-
-
+insert into "tool_type"("tool_type_id", "name")
+ values
+	(1,'試錐機'),
+	(2,'ハンマー落下'),
+	(3,'ポンプ');
 DROP TABLE IF EXISTS
    "users"
 ;
@@ -532,6 +569,7 @@ CREATE TABLE "users"(
 CREATE TABLE permission_group(
     permission_group_id SERIAL,
     permission_group_name varchar(255),
+	description text,
 	allow_boring_data_management BOOLEAN,
 	allow_test_result_in_lab_management BOOLEAN,
 	allow_quality_of_tnf_management BOOLEAN,
@@ -552,21 +590,6 @@ alter table "users"
 add constraint fk_user_permission_group
 foreign key (permission_group_id)
 references permission_group(permission_group_id);
-
-
-insert into department(department_name)
-VALUES
-('設計'),
-('営業'),
-('施工A'),
-('現場'),
-('試験室');
-
-insert into permission_group(permission_group_name,allow_boring_data_management,allow_test_result_in_lab_management,allow_quality_of_tnf_management,allow_others_management,allow_view,allow_user_management,allow_report_generator,allow_system_setting_management)
-VALUES
-('Administrator',true,true,true,true,true,true,true,true);
 insert into "users"(user_name,user_email,user_password,department_id,permission_group_id)
 VALUES
-('Admin','vulinh.hust@gmail.com','123456a@',1,1),
-('LinhVT','vulinh.hut@gmail.com','vutuanlinh',1,1);
-
+('Admin','vulinh.hust@gmail.com','123456a@',null,null);
