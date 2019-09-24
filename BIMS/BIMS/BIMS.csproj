@@ -96,12 +96,22 @@
     <Compile Include="Model\ConstructionExecuting.cs" />
     <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\DataTable.cs" />
+    <Compile Include="Model\DesignRoute.cs" />
     <Compile Include="Model\Element.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\MixingResult.cs" />
     <Compile Include="Model\Position.cs" />
+    <Compile Include="Model\PurposeModel.cs" />
     <Compile Include="Model\QualityTesting.cs" />
+    <Compile Include="Model\Region.cs" />
+    <Compile Include="Model\RegionData.cs" />
+    <Compile Include="Model\RoofTop.cs" />
+    <Compile Include="Model\ScaleModel.cs" />
+    <Compile Include="Model\StructureType.cs" />
     <Compile Include="Model\TestingSample.cs" />
+    <Compile Include="UserAsking.xaml.cs">
+      <DependentUpon>UserAsking.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\DetectRelationships.cs" />
     <Compile Include="Utilities\ExcelToSqlManipulationEdition.cs" />
     <Compile Include="Utilities\SqlDataAccess.cs" />
@@ -120,6 +130,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UserAsking.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

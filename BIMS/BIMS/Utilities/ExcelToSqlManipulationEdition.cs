@@ -17,6 +17,7 @@ using static BIMS.Attributes.PropertyInfoExtensions;
 using BIMS.Attributes;
 using System.Reflection;
 using BIMS.Model;
+using System.Windows;
 
 namespace BIMS.Utilities
 {
@@ -28,6 +29,18 @@ namespace BIMS.Utilities
         private Excel.Worksheet _XlworkSheet = null;
         Excel.Workbook _XlWorkBook = null;
         private int _StartRowInExcel = 1;
+
+        public int StartRowInExcel
+        {
+            get
+            {
+                return _StartRowInExcel;
+            }
+            set
+            {
+                _StartRowInExcel = value;
+            }
+        }
         private Excel.Range _XlRange;
         private int _NumbOfRows = 0;
         private int _NumbOfColumns = 0;
@@ -74,6 +87,107 @@ namespace BIMS.Utilities
             return newOne;
 
         }
+        public Dictionary<int, T> ReadData<T>()
+        {
+            try
+            {
+                // get properties what need to get value from an excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+                if (propertyNames.Count == 0)
+                {
+                    throw new Exception("Don't have any required property.");
+                }
+                Dictionary<int, T> results = new Dictionary<int, T>();
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    T newObj = (T)Activator.CreateInstance(typeof(T));
+                    foreach (string pName in propertyNames)
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+
+                    results.Add(row, newObj);
+                }
+                return results;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            finally
+            {
+                CloseExcelFile();
+            }
+        }
+
+        public void PreProcessingData()
+        {
+            try
+            {
+                // get properties what need to get value from an excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(Region));
+                if (propertyNames.Count == 0)
+                {
+                    throw new Exception("Don't have any required property.");
+                }
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    Region newObj = (Region)Activator.CreateInstance(typeof(Region));
+                    foreach (string pName in propertyNames)
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                    newObj.Adjust();
+                    var res = FindResultOnDatabase(newObj);
+                    if (res!=null && res.Count >= 1)
+                    {
+                        object rs1 = res.GetElementAt(0).Value("region_name");
+                        object rs2 = res.GetElementAt(0).Value("region_id");
+                        SetValueInCell(row, "I", rs1);
+                        SetValueInCell(row, "J", rs2);
+                    }
+                    
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            finally
+            {
+                CloseExcelFile();
+            }
+
+        }
+
+        private DataTable FindResultOnDatabase(Region newObj)
+        {
+            string sqlQuery = @"";
+            StringBuilder str = new StringBuilder();
+            str.AppendFormat("select * from regions where region_parent_id in(select region_id from regions where regions.region_parent_id in (select DISTINCT region_id from regions WHERE region_level = 1 and region_name = '{0}') and(region_name = '{1}')) and region_name like '%{2}%'", newObj.Prefecture, newObj.Ward, newObj.Area);
+
+            SqlDataAccess sqlDataAccess = new SqlDataAccess();
+            var sqlParams = new List<SqlParameter>();
+            if (newObj == null || string.IsNullOrWhiteSpace(newObj.Prefecture)||
+                string.IsNullOrWhiteSpace(newObj.Ward)||
+                string.IsNullOrWhiteSpace(newObj.Area))
+            {
+                return null;
+            }
+            sqlParams.Add(new SqlParameter("level1",newObj.Prefecture));
+            sqlParams.Add(new SqlParameter("level2", newObj.Ward));
+            sqlParams.Add(new SqlParameter("level3", newObj.Area));
+
+            return sqlDataAccess.ExecuteSelectMultiTables(str.ToString(),null);
+
+        }
+
         public void Execute<T>()
         {
             bool hasALeastOneUnique = true;
@@ -159,6 +273,9 @@ namespace BIMS.Utilities
             }
             CloseExcelFile();
         }
+
+
+
 
         public bool ExecuteMultiRecords<T>()
         {
@@ -857,6 +974,19 @@ namespace BIMS.Utilities
             }
             return CreateInsertQuery(table, parameters);
         }
+
+        public string CreateSelectQuery()
+        {
+            StringBuilder sqlQuery = new StringBuilder();
+            string tableCol = "regions";
+            string parentRegionId = "region_parent_id";
+            string regionId = "region_id";
+            string regionLevel = "region_level";
+            string regionName = "region_name";
+
+            return null;
+
+        }
         /// <summary>
         /// Insert data into a table.
         /// </summary>
@@ -918,6 +1048,18 @@ namespace BIMS.Utilities
         /// <param name="row">The row index.</param>
         /// <param name="columnName">The column name.</param>
         /// <returns>The value in the cell[row,column]</returns>
+        private void SetValueInCell(int row, string columnName, object value)
+        {
+            try
+            {
+                Excel.Range cell = _XlworkSheet.Cells[row, columnName];
+                _XlworkSheet.Cells[row, columnName].Value2 = value.ToString();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
         private string GetValueInCell(int row, string columnName)
         {
             try

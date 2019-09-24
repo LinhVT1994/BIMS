@@ -31,7 +31,7 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-       private string _Url = @"C:\Users\TUAN-LINH\Desktop\TestData.xlsx";
+        private string _Url = @"C:\Users\vulin\Desktop\Workspace\data2.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
        // private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
@@ -43,6 +43,11 @@ namespace BIMS
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
             listInformation.Items.Add("Starting updating data to Position table...");
+            ExcelToSqlManipulationEdition reader = ExcelToSqlManipulationEdition.CreateInstance(_Url);
+            reader.StartRowInExcel = 4;
+            reader.PreProcessingData();
+            return;
+
             Task<bool> task1 = Task<bool>.Run(() =>
             {
                 this.Dispatcher.Invoke((Action)(() =>
