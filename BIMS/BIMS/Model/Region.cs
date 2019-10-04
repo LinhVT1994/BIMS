@@ -51,27 +51,32 @@ namespace BIMS.Model
             string path2 = "";
             int index = 0;
             int len = area.Count();
+            bool found = false;
+
             for (int i = 0; i < len; i++)
             {
                 char c = area[i];
                 if (c == '区' || c == '郡' || c == '町' || c == '村')
                 {
                     index = i;
+                    found = true;
                     break;
                 }
             }
-            int subLen = index + 1;
-            if (subLen < len)
+            if (found)
             {
-                path1 = area.Substring(0, subLen);
-                path2 = area.Substring(subLen, len - subLen);
+                int subLen = index + 1;
+                if (subLen < len)
+                {
+                    path1 = area.Substring(0, subLen);
+                    path2 = area.Substring(subLen, len - subLen);
+                }
+                if (!string.IsNullOrWhiteSpace(path2))
+                {
+                    Ward = Ward + path1;
+                    Area = path2;
+                }
             }
-            if (!string.IsNullOrWhiteSpace(path2))
-            {
-                Ward = Ward + path1;
-                Area = path2;
-            }
-
         }
 
     }

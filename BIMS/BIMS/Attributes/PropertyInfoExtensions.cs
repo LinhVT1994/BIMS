@@ -51,6 +51,19 @@ namespace BIMS.Attributes
                     }
                     
                 }
+                else if (propertyInfo.PropertyType == typeof(bool))
+                {
+                    var temp = value.ToString();
+                    if (temp.Contains("●"))
+                    {
+                        propertyInfo.SetValue(obj, true);
+                    }
+                    else
+                    {
+                        propertyInfo.SetValue(obj, false);
+                    }
+                   
+                }
                 else if (propertyInfo.PropertyType == typeof(double))
                 {
                     double db;

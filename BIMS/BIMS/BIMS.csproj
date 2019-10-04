@@ -44,8 +44,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Npgsql, Version=4.0.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Npgsql.4.0.3\lib\net451\Npgsql.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -70,6 +70,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="Utilities">
+      <HintPath>..\..\..\..\LinhVT\TNFIMSSupporter\TNFIMSSupporter\Utilities\bin\Debug\Utilities.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -98,6 +101,7 @@
     <Compile Include="Model\DataTable.cs" />
     <Compile Include="Model\DesignRoute.cs" />
     <Compile Include="Model\Element.cs" />
+    <Compile Include="Model\ExecutedConstruction.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\MixingResult.cs" />
     <Compile Include="Model\Position.cs" />
@@ -109,6 +113,7 @@
     <Compile Include="Model\ScaleModel.cs" />
     <Compile Include="Model\StructureType.cs" />
     <Compile Include="Model\TestingSample.cs" />
+    <Compile Include="SampleModel\ConstructionModel.cs" />
     <Compile Include="UserAsking.xaml.cs">
       <DependentUpon>UserAsking.xaml</DependentUpon>
     </Compile>
@@ -159,6 +164,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Resources\Data.xlsx" />
+    <None Include="Resources\fulldata.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

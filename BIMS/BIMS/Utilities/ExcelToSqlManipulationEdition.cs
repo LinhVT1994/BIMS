@@ -147,7 +147,7 @@ namespace BIMS.Utilities
                     if (res!=null && res.Count >= 1)
                     {
                         object rs1 = res.GetElementAt(0).Value("region_name");
-                        object rs2 = res.GetElementAt(0).Value("region_id");
+                        object rs2 = res.GetElementAt(0).Value("zip_code");
                         SetValueInCell(row, "I", rs1);
                         SetValueInCell(row, "J", rs2);
                     }
@@ -951,6 +951,10 @@ namespace BIMS.Utilities
                             parameters.Add(new SqlParameter(paramName, paramValue));
                         }
                         else if (propertyInfo.PropertyType == typeof(double))
+                        {
+                            parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(bool))
                         {
                             parameters.Add(new SqlParameter(paramName, paramValue));
                         }
