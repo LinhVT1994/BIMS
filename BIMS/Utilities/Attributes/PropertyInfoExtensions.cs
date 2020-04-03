@@ -49,12 +49,23 @@ namespace DataUtilities.Attributes
                     {
                         propertyInfo.SetValue(obj, int.Parse(s));
                     }
-                    
+                }
+                else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
+                {
+                    DateTime dt;
+                    if (DateTime.TryParse(value.ToString(), out dt))
+                    {
+                        propertyInfo.SetValue(obj, dt);
+                    }
+                    else
+                    {
+                        propertyInfo.SetValue(obj, null);
+                    }
                 }
                 else if (propertyInfo.PropertyType == typeof(bool))
                 {
                     var temp = value.ToString();
-                    if (temp.Contains("●"))
+                    if (temp.Contains("●") || temp.Contains("○"))
                     {
                         propertyInfo.SetValue(obj, true);
                     }

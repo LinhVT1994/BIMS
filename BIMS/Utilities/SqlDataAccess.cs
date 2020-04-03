@@ -10,6 +10,7 @@ using System.Diagnostics;
 using DataUtilities.Attributes;
 using System.Configuration;
 using DataUtilities.Data;
+using Utilities.StringProcessingHelper;
 
 namespace DataUtilities
 {
@@ -52,7 +53,16 @@ namespace DataUtilities
                     {
                         foreach (var param in parameters)
                         {
-                            command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            if (param.DbType == System.Data.DbType.String)
+                            {
+                                var str = param.Value == null ? null : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                command.Parameters.AddWithValue(param.ParameterName, str);
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            }
+
                         }
                     }
                     NpgsqlDataReader dataReader  = command.ExecuteReader(); // execute a query to the database.
@@ -85,9 +95,18 @@ namespace DataUtilities
                             }
                             else
                             {
-                                command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                                if (param.DbType == System.Data.DbType.String)
+                                {
+                                    var str = param.Value == null ? null : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                    command.Parameters.AddWithValue(param.ParameterName, str);
+                                }
+                                else
+                                {
+                                    command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                                }
+
                             }
-                            
+
                         }
                     }
                     DataTable dataTable = new DataTable();
@@ -130,7 +149,16 @@ namespace DataUtilities
                     {
                         foreach (var param in parameters)
                         {
-                            command.Parameters.AddWithValue(param.ParameterName, param.Value); // execute a query to the database.
+                            if (param.DbType == System.Data.DbType.String)
+                            {
+                                var str = param.Value == null ? null : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                command.Parameters.AddWithValue(param.ParameterName, str);
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            }
+
                         }
                     }
                     int effectedRows = command.ExecuteNonQuery();
@@ -159,7 +187,16 @@ namespace DataUtilities
                     {
                         foreach (var param in parameters)
                         {
-                            command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            if (param.DbType == System.Data.DbType.String)
+                            {
+                                var str = param.Value == null? null: JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                command.Parameters.AddWithValue(param.ParameterName, str);
+                            }
+                            else
+                            {
+                                command.Parameters.AddWithValue(param.ParameterName, param.Value);
+                            }
+                           
                         }
                     }
                     int effectedRows = command.ExecuteNonQuery(); // execute a query to the database.

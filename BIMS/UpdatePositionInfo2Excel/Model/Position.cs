@@ -1,5 +1,4 @@
-﻿using DataUtilities.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,13 +23,13 @@ namespace UpdatePositionInfo2Excel.Model
         [SqlParameter("id"),PrimaryKey, Required, AutoIncrement]
         public int Id { get; set; }
         
-        [SqlParameter("postoffice"),Required, Unique,ExcelColumn("B")]
+        [SqlParameter("postoffice"),Required, Unique,ExcelColumn("Y")]
         public string Postoffice { get; set; }
 
-        [SqlParameter("latitude"), Required, ExcelColumn("J")]
+        [SqlParameter("latitude"), Required, ExcelColumn("Z")]
         public double Latitude { get; set; }
 
-        [SqlParameter("longitude"), Required, ExcelColumn("K")]
+        [SqlParameter("longitude"), Required, ExcelColumn("AA")]
         public double Longitude { get; set; }
     }
 }

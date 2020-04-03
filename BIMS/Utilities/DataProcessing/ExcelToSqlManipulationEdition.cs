@@ -92,6 +92,7 @@ namespace DataUtilities.DataProcessing
             return newOne;
 
         }
+
         public Dictionary<int, T> ReadData<T>()
         {
             try
@@ -278,7 +279,204 @@ namespace DataUtilities.DataProcessing
             }
             CloseExcelFile();
         }
-        public void ExecuteComparing<T>(Predicate<T> CheckData,Func<T, string> queryStringCreator, Dictionary<string, string> excelColumMap)
+
+        public List<T> ExecuteDataGetting<T>(Action<T, object[]> getDataMethod, Predicate<T> CheckData)
+        {
+            List<T> listData = new List<T>();
+            try
+            {
+                // get properties what need to get value from an excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+                if (propertyNames.Count == 0)
+                {
+                    throw new Exception("Don't have any required property.");
+                }
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    T newObj = (T)Activator.CreateInstance(typeof(T));
+                    object[] data = new object[_NumbOfColumns];
+
+                    for (int i = 1; i < _NumbOfColumns; i++)
+                    {
+                        data[i-1] = _XlworkSheet.Cells[row, i]?.Value;
+                    }
+                    if (getDataMethod != null)
+                    {
+                        getDataMethod?.Invoke(newObj, data);
+                    }
+                  
+                    if (CheckData!=null)
+                    {
+                        if (CheckData.Invoke(newObj))
+                        {
+                            listData.Add(newObj);
+                        }
+                        Debug.WriteLine(newObj.ToString());
+                    }
+                }
+                return listData;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            finally
+            {
+                CloseExcelFile();
+            }
+        }
+        public void ExecuteTraveling<T>(Predicate<T> CheckData, Func<T,T> adjustObjMethod ,Dictionary<string, string> excelColumMap)
+        {
+            if (adjustObjMethod == null || excelColumMap == null || excelColumMap.Count <= 0)
+            {
+                throw new ArgumentNullException(nameof(adjustObjMethod));
+            }
+            try
+            {
+                // get properties what need to get value from an excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+                if (propertyNames.Count == 0)
+                {
+                    throw new Exception("Don't have any required property.");
+                }
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    T newObj = (T)Activator.CreateInstance(typeof(T));
+                    foreach (string pName in propertyNames)
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                
+                    if (!CheckData(newObj))
+                    {
+                        continue;
+                    }
+                    newObj = adjustObjMethod.Invoke(newObj);
+                    Type type = newObj.GetType();
+                    foreach (var item in excelColumMap)
+                    {
+                        var result = type.GetProperty(item.Key);
+                        var obj= result.GetValue(newObj);
+                        SetValueInCell(row, item.Value,obj);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            finally
+            {
+                CloseExcelFile();
+            }
+        }
+
+
+        public bool ExecuteMultiRecords<T>(Predicate<T> CheckData)
+        {
+            Dictionary<string, T> dicResult = new Dictionary<string, T>();
+            Type type = typeof(T);
+            // the properties what need to get value from a excel file.
+            List<string> properties = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+            if (properties.Count == 0)
+            {
+                throw new Exception("Dont have any required property.");
+            }
+            // a mapping the name of a property and a name of column in a excel file.
+            Dictionary<string, string> columnMap = ColumnNamesMapping(typeof(T));
+            if (columnMap.Count == 0)
+            {
+                return false;
+            }
+            int numbRecords = GetNumbOfColumnsToRead(typeof(T));
+            for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+            {
+                Dictionary<string, string[]> mappingInExcel = ExcelColumnAttribute.GetNameOfColumnsInExcel(typeof(T));
+                T newObj = default(T);
+                List<T> listNewObjects = new List<T>();
+                for (int index = 0; index < numbRecords; index++)
+                {
+                    newObj = (T)Activator.CreateInstance(typeof(T));
+                    foreach (string property in properties) // properties are 
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(property);
+                        if (IsPrimaryKey(typeof(T), property)) // handling for a ForeignKey.
+                        {
+
+                        }
+                        else if (IsForeignKey(typeof(T), property)) // handling for a ForeignKey.
+                        {
+
+                        }
+                        else
+                        {
+                            string[] columnsInExcel = null;
+                            bool success = mappingInExcel.TryGetValue(property, out columnsInExcel); // get 
+                            if (success)
+                            {
+                                // get value in the excel file.
+                                try
+                                {
+                                    string valueInCell = GetValueInCell(row, columnsInExcel[index]);
+                                    propertyInfo.SetValueByDataType(newObj, valueInCell);
+                                }
+                                catch (Exception e)
+                                {
+
+                                    throw e;
+                                }
+
+                            }
+                            else
+                            {
+                                throw new ArgumentException("The parameters in the ExcelColumnAttribute are not correct.");
+                            }
+                        }
+                    }
+                    listNewObjects.Add(newObj);
+                }
+                listNewObjects = PreProcess<T>(listNewObjects);
+                if (listNewObjects == null || listNewObjects.Count <= 0)
+                {
+                    continue;
+                }
+                // update for foreign key properties.
+              
+
+                // insert all of elements in the list to the sql.
+                foreach (var obj in listNewObjects)
+                {
+                    // set value for 
+                    try
+                    {
+                        bool? validatedResult = CheckData?.Invoke(obj);
+                        if ((validatedResult==null?false:(bool)validatedResult))
+                        {
+                           
+                            RequestToSql<T>(obj);
+                        }
+                        
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.Message);
+                    }
+
+                }
+
+            }
+            // close the excel app.
+            CloseExcelFile();
+            return true;
+        }
+
+        public void ExecuteComparing<T>(Predicate<T> CheckData, Func<T, string> queryStringCreator, Dictionary<string, string> excelColumMap)
         {
             if (queryStringCreator == null || excelColumMap == null || excelColumMap.Count <= 0)
             {
@@ -301,21 +499,23 @@ namespace DataUtilities.DataProcessing
                         PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
                         HandleForRequiredProperty(newObj, pName, row);
                     }
-                    string query = queryStringCreator?.Invoke(newObj);
+                  
                     if (!CheckData(newObj))
                     {
                         continue;
                     }
+                    string query = queryStringCreator?.Invoke(newObj);
                     if (query == null)
                     {
-                        throw new Exception("Null exception: "+nameof(query));
+                        throw new Exception("Null exception: " + nameof(query));
                     }
                     var res = GetDataFromDB(query);
                     if (res != null && res.Count >= 1)
                     {
                         foreach (var item in excelColumMap)
                         {
-                            object rs1 =  res.GetElementAt(0).Value(item.Key);
+                            object rs1 = res.GetElementAt(0).Value(item.Key);
+                          
                             SetValueInCell(row, item.Value, rs1);
                         }
                     }
@@ -342,91 +542,117 @@ namespace DataUtilities.DataProcessing
             SqlDataAccess sqlDataAccess = new SqlDataAccess(connectionString);
             return sqlDataAccess.ExecuteSelectMultiTables(query, null);
         }
-        public void Upload<T>()
+        public void Upload<T>(Predicate<T> validate,
+                              Func<T, T> preProcessingProceduce)
         {
-            bool hasALeastOneUnique = true;
-            // the properties what need to get value from a excel file.
-            List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
-            if (propertyNames.Count == 0)
+            try
             {
-                throw new Exception("Don't have any required property.");
-            }
-            // the list of properties what required to have to has a value is unique. 
-            List<string> uniqueProperties = GetUniqueProperties(typeof(T));
-
-            if (GetUniqueProperties(typeof(T)).Count <= 0)
-            {
-                hasALeastOneUnique = false;
-            }
-            Dictionary<string, T> dicResult = new Dictionary<string, T>();
-            for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
-            {
-                // create new object of the genneric object.
-                T newObj = (T)Activator.CreateInstance(typeof(T));
-                string key = null;
-                foreach (string pName in propertyNames)
+                bool hasALeastOneUnique = true;
+                // the properties what need to get value from a excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+                if (propertyNames.Count == 0)
                 {
-                    PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
-                    if (IsPrimaryKey(typeof(T), pName)) // is primany key.
+                    throw new Exception("Don't have any required property.");
+                }
+                // the list of properties what required to have to has a value is unique. 
+                List<string> uniqueProperties = GetUniqueProperties(typeof(T));
+
+                if (GetUniqueProperties(typeof(T)).Count <= 0)
+                {
+                    hasALeastOneUnique = false;
+                }
+                Dictionary<string, T> dicResult = new Dictionary<string, T>();
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    T newObj = (T)Activator.CreateInstance(typeof(T));
+                    string key = null;
+                    foreach (string pName in propertyNames)
                     {
-                        if (IsAutoIncrement(typeof(T), pName))
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                        if (IsPrimaryKey(typeof(T), pName)) // is primany key.
                         {
-                            if (!hasALeastOneUnique)
+                            if (IsAutoIncrement(typeof(T), pName))
                             {
-                                key = (dicResult.Count + 1).ToString();
+                                if (!hasALeastOneUnique)
+                                {
+                                    key = (dicResult.Count + 1).ToString();
+                                }
+                                propertyInfo.SetValue(newObj, dicResult.Count + 1);
                             }
-                            propertyInfo.SetValue(newObj, dicResult.Count + 1);
+                        }
+                        else if (IsUnique(typeof(T), pName))
+                        {
+                            try
+                            {
+                                string columnName = null;
+                                key = HandleForUniqueKey(newObj, pName, row, out columnName);
+                                if (string.IsNullOrWhiteSpace(key))
+                                {
+                                    string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", row, columnName, "Ignore", "Can't get value on this cell.");
+                                    
+                                    break;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
+                        }
+                        else if (IsForeignKey(typeof(T), pName)) // is foreign key.
+                        {
+                            //　get the table and property what referenced to.
+                            if (!HandleForForeignKey<T>(newObj, pName, row))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            HandleForRequiredProperty(newObj, pName, row);
                         }
                     }
-                    else if (IsUnique(typeof(T), pName))
+                    // if the key has not setted any value then ignore it.
+                    if (string.IsNullOrWhiteSpace(key))
                     {
-                        try
-                        {
-                            string columnName = null;
-                            key = HandleForUniqueKey(newObj, pName, row, out columnName);
-                            if (string.IsNullOrWhiteSpace(key))
-                            {
-                                string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", row, columnName, "Ignore", "Can't get value on this cell.");
-                                SetErrorInfoMarkForRow(row);
-                                break;
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            throw;
-                        }
-                    }
-                    else if (IsForeignKey(typeof(T), pName)) // is foreign key.
-                    {
-                        //　get the table and property what referenced to.
-                        if (!HandleForForeignKey<T>(newObj, pName, row))
-                        {
-                            break;
-                        }
+                        //
+                        continue;
                     }
                     else
                     {
-                        HandleForRequiredProperty(newObj, pName, row);
-                    }
-                }
-                // if the key has not setted any value then ignore it.
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    //
-                    continue;
-                }
-                else
-                {
-                    if (!dicResult.ContainsKey(key))
-                    {
-                        dicResult.Add(key, newObj);
-                        RequestToSql<T>(newObj);
+                        if (!dicResult.ContainsKey(key))
+                        {
+                            dicResult.Add(key, newObj);
+                            if (!validate.Invoke(newObj))
+                            {
+                                //SetErrorInfoMarkForRow(row);
+                                continue;
+                            }
+                            newObj = preProcessingProceduce.Invoke(newObj);
+                            RequestToSql<T>(newObj);
+                            var dataTable = GetLastElement<T>();
+                            Type type = typeof(T);
+                            var listSaveProperties = ExcelTemporaryStorageAttribute.GetExcelTemporaryStoragePropertiesName(type);
+                            if (listSaveProperties != null && listSaveProperties.Count > 0)
+                            {
+                                foreach (var property in listSaveProperties)
+                                {
+                                    string sqlColumn = SqlParameterAttribute.GetNameOfParameterInSql(type, property);
+                                    var data = dataTable.GetElementAt(0).Value(sqlColumn);
+                                    string column = ExcelTemporaryStorageAttribute.GetExcelTemporaryStorageColumn(type, property);
+                                    SetValueInCell(row, column, data);
+                                }
+                            }
+                        }
                     }
                 }
             }
-            CloseExcelFile();
+            finally
+            {
+                CloseExcelFile();
+            }
         }
-        public void Upload<T>(Predicate<T> validate, 
+        public void UploadIfNotExisted<T>(Predicate<T> validate, 
                               Func<T,T> preProcessingProceduce = null)
         {
             bool hasALeastOneUnique = true;
@@ -519,6 +745,19 @@ namespace DataUtilities.DataProcessing
             }
             CloseExcelFile();
         }
+
+
+        public DataTable GetLastElement<T>()
+        {
+            var typeObject = typeof(T);
+            string tableName = (typeObject.GetCustomAttribute(typeof(SqlParameterAttribute), false) as SqlParameterAttribute).PropertyName;
+            SqlDataAccess access = new SqlDataAccess(connectionString);
+            var para = GetPrimaryKey(typeof(T));
+            string id = SqlParameterAttribute.GetNameOfParameterInSql(typeObject, para.Name);
+
+            string query = "select * from " + tableName + " order by " + id + " desc limit 1";
+            return access.ExecuteSelectMultiTables(query,null);
+        }
         public bool CheckExistOnDB<T>(T obj)
         {
             var typeObject = typeof(T);
@@ -534,14 +773,15 @@ namespace DataUtilities.DataProcessing
             foreach (var str in properties)
             {
                 var propertyInfo = typeObject.GetProperty(str);
+                string sqlCol = SqlParameterAttribute.GetNameOfParameterInSql(typeObject, str);
                 var value = propertyInfo.GetValue(obj);
                 if (propertyInfo.PropertyType == typeof(string))
                 {
-                    queryBuilder.AppendFormat("{0} = '{1}' and ", str, value);
+                    queryBuilder.AppendFormat("{0} = '{1}' and ", sqlCol, value);
                 }
                 else if (propertyInfo.PropertyType == typeof(int))
                 {
-                    queryBuilder.AppendFormat("{0} = '{1}' and ", str, (int)value);
+                    queryBuilder.AppendFormat("{0} = '{1}' and ", sqlCol, (int)value);
                 }
                 else
                 {
@@ -1254,6 +1494,21 @@ namespace DataUtilities.DataProcessing
                         else if (propertyInfo.PropertyType == typeof(bool))
                         {
                             parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
+                        {
+                            if ((DateTime)result == default(DateTime))
+                            {
+                                parameters.Add(new SqlParameter(paramName, null));
+                            }
+                            else
+                            {
+                                DateTime dt;
+                                DateTime.TryParse(result.ToString(), out dt);
+
+                                parameters.Add(new SqlParameter(paramName, dt));
+                            }
+                            
                         }
                         else if (propertyInfo.PropertyType.BaseType == typeof(Element))
                         {

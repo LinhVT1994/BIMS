@@ -12,6 +12,7 @@ namespace DesignDataMatching
 {
     class Program
     {
+
         private static string _ConnectStr = @"Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=TempDatabase";
         static void Main(string[] args)
         {
@@ -21,6 +22,7 @@ namespace DesignDataMatching
             string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\Data2.xlsx";
 
             Console.WriteLine("Starting....");
+
             Task task = Task.Run(() =>
             {
                 ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(url, _ConnectStr);

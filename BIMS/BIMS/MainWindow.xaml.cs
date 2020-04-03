@@ -32,9 +32,9 @@ namespace BIMS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private SqlParameter param;
-        private string _Url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\Data.xlsx";
+        //private string _Url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\companies_japan.xlsx";
         //TraceListener listener = new DelimitedListTraceListener(@"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\logging.txt");
-       // private string _Url = @"C:\Users\VuLin\Desktop\Test.xlsx";
+        private string _Url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\test_data.xlsx";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -43,57 +43,22 @@ namespace BIMS
         }
         private void LoadFromAExtendFile_Click(object sender, RoutedEventArgs e)
         {
-            listInformation.Items.Add("Starting updating data to Position table...");
+          
 
-
-            return;
             Task <bool> task1 = Task<bool>.Run(() =>
             {
+
                 this.Dispatcher.Invoke((Action)(() =>
                 {
-                    ShowProcessingSign();
+                    listInformation.Items.Add("Starting updating ...");
                 }));
-                try
-                {
-                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
-                    excelToSql.Execute<Position>();
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }).ContinueWith<bool>((theFirstTask)=> {
-                if (theFirstTask.Result)
-                {
+                return true;
 
-                    this.Dispatcher.Invoke((Action)(() =>
-                    {
-                        listInformation.Items.Add("Updating data to Position table is success!");
-                        listInformation.Items.Add("Starting updating data to Construction table...");
-                        listInformation.Items.Refresh();
-                    }));
-                    ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
-                    try
-                    {
-                       excelToSql.Execute<Construction>();
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
             }).ContinueWith<bool>((theFirstTask) => {
                 if (theFirstTask.Result)
                 {
                     this.Dispatcher.Invoke((Action)(() =>
                     {
-                        listInformation.Items.Add("Updating data to Construction table is success!");
                         listInformation.Items.Add("Starting updating data to Cement table...");
                         listInformation.Items.Refresh();
                         
@@ -125,6 +90,7 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
+                        excelToSql.StartRowInExcel = 6;
                         excelToSql.Execute<TestingSample>();
                         return true;
                     }
@@ -149,6 +115,7 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
+                        excelToSql.StartRowInExcel = 6;
                         excelToSql.ExecuteMultiRecords<MixingResult>();
                         return true;
                     }
@@ -170,6 +137,7 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
+                        excelToSql.StartRowInExcel = 6;
                         excelToSql.ExecuteMultiRecords<ConstructionExecuting>();
                         return true;
                     }
@@ -191,6 +159,7 @@ namespace BIMS
                     ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(_Url);
                     try
                     {
+                        excelToSql.StartRowInExcel = 6;
                         excelToSql.ExecuteMultiRecords<QualityTesting>();
                         return true;
                     }

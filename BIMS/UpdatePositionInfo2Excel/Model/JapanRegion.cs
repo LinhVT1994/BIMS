@@ -13,7 +13,7 @@ namespace UpdatePositionInfo2Excel.Model
         [SqlParameter("id"), PrimaryKey, Required, AutoIncrement]
         public int Id { get; set; }
 
-        [SqlParameter("postoffice"), Required, Unique, ExcelColumn("F")]
+        [SqlParameter("postoffice"), Required, Unique, ExcelColumn("Y")]
         public string Postoffice { get; set; }
 
         [SqlParameter("latitude"), Required, ExcelColumn("H")]

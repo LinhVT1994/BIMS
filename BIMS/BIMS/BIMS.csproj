@@ -88,6 +88,7 @@
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
     <Compile Include="Attributes\DistinguishAttribute.cs" />
     <Compile Include="Attributes\ExcelColumnAttribute.cs" />
+    <Compile Include="Attributes\ExcelTemporaryStorageAttribute.cs" />
     <Compile Include="Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="Attributes\PropertyInfoExtensions.cs" />

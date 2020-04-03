@@ -148,8 +148,8 @@ namespace BIMS.Utilities
                     {
                         object rs1 = res.GetElementAt(0).Value("region_name");
                         object rs2 = res.GetElementAt(0).Value("zip_code");
-                        SetValueInCell(row, "I", rs1);
-                        SetValueInCell(row, "J", rs2);
+                        SetValueInCell(row, "H", rs1);
+                        SetValueInCell(row, "I", rs2);
                     }
                     
                 }

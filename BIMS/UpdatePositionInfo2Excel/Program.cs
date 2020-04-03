@@ -30,17 +30,18 @@ namespace UpdatePositionInfo2Excel
             });
             Task.WaitAll(task);
             */
-            string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\DatabaseResources\JapanRegions.xlsx";
-
+            //string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\DatabaseResources\JapanRegions.xlsx";
+            string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\Data2.xlsx";
+            
             Console.WriteLine("Starting....");
             Task task = Task.Run(() =>
             {
                 ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(url, _ConnectStr);
-                excelToSql.StartRowInExcel = 2;
+                excelToSql.StartRowInExcel = 4;
                 Dictionary<string, string> updatingMap = new Dictionary<string, string>
                 {
-                    {"latitude","H"},
-                    {"longitude","I"},
+                    {"latitude","Z"},
+                    {"longitude","AA"},
                 };
 
                excelToSql.ExecuteComparing<JapanRegion>(
@@ -76,8 +77,60 @@ namespace UpdatePositionInfo2Excel
             Task.WaitAll(task);
             #endregion
 
+            #region Upload to excel
+            /*
+             * Task task = Task.Run(() =>
+            {
+                ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(url, _ConnectStr);
+                excelToSql.StartRowInExcel = 4;
+                Dictionary<string, string> updatingMap = new Dictionary<string, string>
+                {
+                    {"AddressDetail","AB"},
+                };
 
+               excelToSql.ExecuteTraveling<PositionRecord>(
+                   (region) =>
+                            {
+                                if (region == null || string.IsNullOrWhiteSpace(region.FullAddress))
+                                {
+                                    return false;
+                                }
+                                return true;
+                            },
+                            (region)=> {
 
+                                var fullAddress = region.FullAddress;
+                                int len = fullAddress.Length;
+                                var area = region.District;
+                                if (string.IsNullOrWhiteSpace(fullAddress)|| string.IsNullOrWhiteSpace(area))
+                                {
+                                    return region;
+                                }
+                                else
+                                {
+                                    var index = fullAddress.IndexOf(area,0);
+                                    if (index < 0)
+                                    {
+                                        return region;
+                                    }
+                                    else
+                                    {
+                                        region.AddressDetail = fullAddress.Substring(index + area.Length, len - index - area.Length);
+                                    }
+                                }
+
+                                return region;
+                            }, 
+                            updatingMap);
+
+            }).ContinueWith(continuesTask => {
+                source.Cancel();
+                Console.WriteLine("Finish....");
+                
+            });
+             * 
+             * */
+            #endregion
             Console.Read();
         
         }

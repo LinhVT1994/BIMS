@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Model\JapanRegion.cs" />
     <Compile Include="Model\Position.cs" />
+    <Compile Include="Model\PositionRecord.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -13,7 +13,7 @@ namespace CompanyDataProcessing
     class Program
     {
         private static string _Url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\DatabaseResources\postition.xlsx";
-        private static string _ConnectStr = @"Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=TempDatabase";
+        private static string _ConnectStr = @"Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_boring_data";
         static void Main(string[] args)
         {
             CancellationTokenSource source = new CancellationTokenSource();
@@ -39,7 +39,7 @@ namespace CompanyDataProcessing
                 ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(url, _ConnectStr);
                 excelToSql.StartRowInExcel = 4;
 
-               excelToSql.Upload<Company>(
+               excelToSql.UploadIfNotExisted<Company>(
                    (company)=> {
                        if (company == null || string.IsNullOrWhiteSpace(company.Name) || company.Name.Length < 2)
                        {

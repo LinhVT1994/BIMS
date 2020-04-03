@@ -12,19 +12,19 @@ namespace BIMS.Model
 
         private string area;
 
-        [Required,ExcelColumn("F")]
+        [Required,ExcelColumn("C")]
         public string Prefecture
         {
             get;
             set;
         }
-        [Required,ExcelColumn("G")]
+        [Required,ExcelColumn("D")]
         public string Ward
         {
             get;
             set;
         }
-        [Required,ExcelColumn("H")]
+        [Required,ExcelColumn("E")]
         public string Area
         {
             get
