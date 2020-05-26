@@ -18,60 +18,82 @@ namespace DesignDataMatching
         {
             CancellationTokenSource source = new CancellationTokenSource();
             CancellationToken token = source.Token;
-          
-            string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\BIMS\BIMS\BIMS\Resources\Data2.xlsx";
 
+            string url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\Documents\TNFIMSData.xlsx";
             Console.WriteLine("Starting....");
 
             Task task = Task.Run(() =>
             {
                 ExcelToSqlManipulationEdition excelToSql = ExcelToSqlManipulationEdition.CreateInstance(url, _ConnectStr);
-                excelToSql.StartRowInExcel = 4;
+                excelToSql.StartRowInExcel = 3;
                 Dictionary<string, string> updatingMap = new Dictionary<string, string>
                 {
-                    {"construction_name","D"},
-                    {"start_date","E"},
-                    {"finish_date","F"},
-                    {"implementation_area","G"},
-                    {"volume","H"},
-                    {"amount_of_money","I"},
-                    {"business_suporter","K"},
-                    {"contractor","M"},
-                    {"owner","N"},
-                    {"partner","O"},
-                    {"partner1","P"},
-                    {"partner2","Q"},
-                    {"partner3","R"},
-                    {"partner4","S"},
-                    {"partner5","T"},
-                    {"full_address","AB"},
-                    {"structure","AD"},
-                    {"scale","AF"},
-                    {"purpose","AH"},
+                    {"colf","Q"},
+                    {"colt","Z"},
+                    {"colu","AA"},
+                    {"colv","AB"},
+                    {"colac","AW"},
+                    {"colad","AX"},
+
+                    {"colai","AM"},
+                    {"colaj","AN"},
+                    {"colak","AO"},
+
+                    {"colan","AR"},
+                    {"colao","AS"},
+                    {"colap","AT"},
+
                 };
 
-                excelToSql.ExecuteComparing<DesignModel>(
+                excelToSql.ExecuteComparing<EstimationData>(
                     (region) =>
                     {
-                        if (region == null || string.IsNullOrWhiteSpace(region.Symbol))
+                        if (region == null || string.IsNullOrWhiteSpace(region.ColNo))
                         {
                             return false;
                         }
                         return true;
                     },
-                             (region) => {
+                    (region) =>
+                             {
                                  StringBuilder str = new StringBuilder();
-                                 str.AppendFormat("select * from designmodel where symbol = '{0}'", region.Symbol);
+                                 str.AppendFormat("select * from estimation_data where colno = '{0}'", region.ColNo);
                                  return str.ToString();
                              },
-                             updatingMap);
+                    updatingMap,
+                    (para, val) => 
+                    {
+                        if (para.ToLower().Equals("colf"))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            double value = 0;
+                            if (double.TryParse(val, out value))
+                            {
+                                if (value > 0)
+                                {
+                                    return true;
+                                }
+                                return false;
+                              
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    });
 
-            }).ContinueWith(continuesTask => {
+            }).ContinueWith(continuesTask =>
+            {
                 source.Cancel();
                 Console.WriteLine("Finish....");
 
             });
-            Task.Run(() => {
+            Task.Run(() =>
+            {
 
                 while (true)
                 {
@@ -81,7 +103,6 @@ namespace DesignDataMatching
 
             }, token);
             Task.WaitAll(task);
-
             /*
             Console.WriteLine("Starting....");
             Task task = Task.Run(() =>

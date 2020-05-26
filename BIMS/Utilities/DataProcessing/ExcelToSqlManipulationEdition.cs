@@ -28,6 +28,11 @@ namespace DataUtilities.DataProcessing
         private Excel.Worksheet _XlworkSheet = null;
         Excel.Workbook _XlWorkBook = null;
         private int _StartRowInExcel = 1;
+        public int EndAtLine
+        {
+            get;
+            set;
+        } = -1;
         private string connectionString = null;
         public int StartRowInExcel
         {
@@ -343,6 +348,10 @@ namespace DataUtilities.DataProcessing
                 }
                 for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
                 {
+                    if (EndAtLine>0&& EndAtLine == row)
+                    {
+                        break;
+                    }
                     // create new object of the genneric object.
                     T newObj = (T)Activator.CreateInstance(typeof(T));
                     foreach (string pName in propertyNames)
@@ -356,15 +365,32 @@ namespace DataUtilities.DataProcessing
                         continue;
                     }
                     newObj = adjustObjMethod.Invoke(newObj);
+                    if (newObj == null)
+                    {
+                        continue;
+                    }
                     Type type = newObj.GetType();
                     foreach (var item in excelColumMap)
                     {
-                        var result = type.GetProperty(item.Key);
-                        var obj= result.GetValue(newObj);
-                        SetValueInCell(row, item.Value,obj);
+                        try
+                        {
+                            var result = type.GetProperty(item.Key);
+                            var obj = result.GetValue(newObj);
+                            SetValueInCell(row, item.Value, obj);
+                        }
+                        catch (IndexOutOfRangeException e)
+                        {
+
+                            throw e;
+                        }
+                   
                     }
 
                 }
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                Debug.WriteLine("Error: " + e.Message);
             }
             catch (Exception e)
             {
@@ -476,7 +502,7 @@ namespace DataUtilities.DataProcessing
             return true;
         }
 
-        public void ExecuteComparing<T>(Predicate<T> CheckData, Func<T, string> queryStringCreator, Dictionary<string, string> excelColumMap)
+        public void ExecuteComparing<T>(Predicate<T> CheckData, Func<T, string> queryStringCreator, Dictionary<string, string> excelColumMap, Func<string,string,bool> CheckDataBeforeUpdate = null)
         {
             if (queryStringCreator == null || excelColumMap == null || excelColumMap.Count <= 0)
             {
@@ -510,13 +536,30 @@ namespace DataUtilities.DataProcessing
                         throw new Exception("Null exception: " + nameof(query));
                     }
                     var res = GetDataFromDB(query);
+                   
                     if (res != null && res.Count >= 1)
                     {
+                        var data = ParseToListItems<T>(res);
+                        
                         foreach (var item in excelColumMap)
                         {
                             object rs1 = res.GetElementAt(0).Value(item.Key);
-                          
-                            SetValueInCell(row, item.Value, rs1);
+                            if (rs1 != null && !string.IsNullOrWhiteSpace(rs1.ToString()))
+                            {
+                                if (CheckDataBeforeUpdate == null)
+                                {
+                                    SetValueInCell(row, item.Value, rs1);
+                                }
+                                else
+                                {
+                                    if (CheckDataBeforeUpdate.Invoke(item.Key, rs1 == null?"" : rs1.ToString()))
+                                    {
+                                        SetValueInCell(row, item.Value, rs1);
+                                    }
+                                }
+                           
+                            }
+                           
                         }
                     }
 
@@ -531,6 +574,60 @@ namespace DataUtilities.DataProcessing
             {
                 CloseExcelFile();
             }
+        }
+        private IEnumerable<T> ParseToListItems<T>(DataTable datatable)
+        {
+            Type type = typeof(T);
+            T newObj = default(T);
+            List<T> result = new List<T>();
+            int count = 0;
+            foreach (DataSet record in datatable.GetAllRecords())
+            {
+                newObj = (T)Activator.CreateInstance(type);
+                foreach (var property in GetRequiredProperties(type))
+                {
+                    string nameOfColumn = GetNameOfParameterInSql(type, property.Name);
+                    if (string.IsNullOrWhiteSpace(nameOfColumn))
+                    {
+                        continue;
+                    }
+                    object value = record.Value(nameOfColumn);
+                    property.SetValueByDataType(newObj, value);
+                }
+                result.Add(newObj);
+            }
+            return result;
+        }
+        public static List<PropertyInfo> GetRequiredProperties(Type type)
+        {
+            List<PropertyInfo> result = new List<PropertyInfo>();
+            PropertyInfo[] properties = type.GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(RequiredAttribute), false); // get the attributes of a property.
+                if (attributes.Length > 0)
+                {
+                    result.Add(property); // add a attribute in the required properties.
+                }
+            }
+            return result;
+        }
+        public static string GetNameOfParameterInSql(Type type, string propertyName)
+        {
+            PropertyInfo[] properties = type.GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                if (property.Name.Trim().ToLower().Equals(propertyName.Trim().ToLower()))
+                {
+                    Attribute[] attributes = (Attribute[])property.GetCustomAttributes(typeof(SqlParameterAttribute), false); // get the attributes of a property.
+                    if (attributes.Length > 0)
+                    {
+                        string value = ((SqlParameterAttribute)attributes[0]).PropertyName.ToString();
+                        return value;
+                    }
+                }
+            }
+            return null;
         }
         public string GetQueryStringData<T>(T obj)
         {
@@ -1588,6 +1685,7 @@ namespace DataUtilities.DataProcessing
                     if (cell.Value != null)
                     {
                         s = _XlworkSheet.Cells[row, columnName].Value.ToString();
+
                         return s;
                     }
                 }
@@ -1610,6 +1708,9 @@ namespace DataUtilities.DataProcessing
             {
                 Excel.Range cell = _XlworkSheet.Cells[row, columnName];
                 _XlworkSheet.Cells[row, columnName].Value2 = value.ToString();
+                _XlworkSheet.Cells[row, columnName].Interior.Color = Excel.XlRgbColor.rgbDarkGreen;
+
+
             }
             catch (Exception)
             {

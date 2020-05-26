@@ -151,7 +151,11 @@ namespace DataUtilities
                         {
                             if (param.DbType == System.Data.DbType.String)
                             {
-                                var str = param.Value == null ? null : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                string str = "";
+                                if (param.Value != null)
+                                {
+                                    str = string.IsNullOrWhiteSpace(param.Value.ToString()) ? "" : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                }
                                 command.Parameters.AddWithValue(param.ParameterName, str);
                             }
                             else
@@ -189,7 +193,11 @@ namespace DataUtilities
                         {
                             if (param.DbType == System.Data.DbType.String)
                             {
-                                var str = param.Value == null? null: JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                string str = "";
+                                if (param.Value != null)
+                                {
+                                    str = string.IsNullOrWhiteSpace(param.Value.ToString()) ? "" : JapaneseCharactersAdapter.Instance.ToHalfWidth(param.Value.ToString());
+                                }
                                 command.Parameters.AddWithValue(param.ParameterName, str);
                             }
                             else
