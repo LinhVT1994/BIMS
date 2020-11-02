@@ -27,7 +27,10 @@ namespace DesignDataImporter.Model
 
         #region Properties
 
-        [Required, PrimaryKey, AutoIncrement, SqlParameter("rooftop_id")]
+        [Required,
+            ExcelTemporaryStorage("CB"),
+            PrimaryKey,
+            AutoIncrement, SqlParameter("rooftop_id")]
         public int RooftopId
         {
             get
@@ -39,7 +42,7 @@ namespace DesignDataImporter.Model
                 rooftopId = value;
             }
         }
-        [Required, Unique, ExcelColumn("AK"), SqlParameter("name")]
+        [Required, Unique, ExcelColumn("M"), SqlParameter("name")]
         public string Name
         {
             get

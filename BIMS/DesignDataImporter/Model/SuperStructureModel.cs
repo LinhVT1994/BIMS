@@ -19,25 +19,25 @@ namespace DesignDataImporter.Model
 
         [SqlParameter("construction_detail_id"),
          Required, 
-         ExcelColumn("CQ")]
+         ExcelColumn("CC")]
         public int ConstructionDetailId
         {
             get;
             set;
         }
-        [SqlParameter("amount_steel_in_grand_beam"), Required, ExcelColumn("AX")]
+        [SqlParameter("amount_steel_in_grand_beam"), Required, ExcelColumn("AH")]
         public double AmountSteelInGrandBeam
         {
             get;
             set;
         }
-        [SqlParameter("amount_steel_in_small_beam"), Required, ExcelColumn("AY")]
+        [SqlParameter("amount_steel_in_small_beam"), Required, ExcelColumn("AI")]
         public double AmountSteelInSmallBeam
         {
             get;
             set;
         }
-        [SqlParameter("amount_steel_in_column"), Required, ExcelColumn("AW")]
+        [SqlParameter("amount_steel_in_column"), Required, ExcelColumn("AJ")]
         public double AmountSteelInColumn
         {
             get;

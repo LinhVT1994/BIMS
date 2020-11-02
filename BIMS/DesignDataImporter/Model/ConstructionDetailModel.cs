@@ -13,7 +13,7 @@ namespace DesignDataImporter.Model
         [Required, 
          AutoIncrement, 
          PrimaryKey,
-         ExcelTemporaryStorage("CQ")
+         ExcelTemporaryStorage("CC")
          SqlParameter("construction_detail_id")]
         public int ConstructionDetailId
         {
@@ -22,44 +22,15 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-         SqlParameter("construction_id"), 
-         ExcelColumn("CP")]
+         ExcelColumn("BZ")]
         public int ConstructionId
         {
             get;
             set;
         }
+      
         [Required,
-         ExcelColumn("AE"),
-         SqlParameter("structure_type_id"),
-         ForeignKey("structure_type", "name[AE]=>structure_type_id")]
-        public StructureTypeModel StructureType
-        {
-            get;
-            set;
-        }
-
-        [Required,
-         ExcelColumn("AG"),
-         SqlParameter("scale_id"),
-         ForeignKey("scale", "name[AG]=>scale_id")]
-        public ScaleModel ScaleModel
-        {
-            get;
-            set;
-        }
-        [Required,
-         ExcelColumn("AI"),
-         SqlParameter("purpose_id"),
-         ForeignKey("purpose", "name[AI]=>purpose_id")]
-        public PurposeModel PurposeModel
-        {
-            get;
-            set;
-        }
-
-        [Required,
-         ExcelColumn("AJ"),
+         ExcelColumn("L"),
          SqlParameter("movable_loading")]
         public double MovableLoading
         {
@@ -68,34 +39,24 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-         ExcelColumn("AK"),
-         SqlParameter("rooftop_id"),
-         ForeignKey("rooftop", "name[AK]=>rooftop_id")]
-        public RooftopModel RooftopModel
-        {
-            get;
-            set;
-        }
+         ExcelColumn("CB"),
+         SqlParameter("rooftop_id")]
+        public int? RooftopId { get; set; }
 
         [Required,
-        ExcelColumn("AL"),
-         SqlParameter("design_route_id"),
-        ForeignKey("design_route", "name[AL]=>design_route_id")]
-        public DesignRouteModel DesignRoute
-        {
-            get;
-            set;
-        }
+        ExcelColumn("CA"),
+        SqlParameter("design_route_id"),]
+        public int? DesignRouteId { get; set; }
 
         [Required,
-        ExcelColumn("AM"),
+        ExcelColumn("O"),
         SqlParameter("snowfall_amount")]
         public double SnowFallAmount
         {
             get;set;
         }
         [Required,
-         ExcelColumn("AN"),
+         ExcelColumn("P"),
          SqlParameter("total_floor_area")]
         public double TotalFloorArea
         {
@@ -103,7 +64,7 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-        ExcelColumn("AO"),
+        ExcelColumn("Q"),
         SqlParameter("total_construction_area")]
         public double TotalConstructionArea
         {
@@ -111,14 +72,14 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-         ExcelColumn("BM"),
+         ExcelColumn("AX"),
          SqlParameter("platform")]
         public bool Flatform
         {
             get; set;
         }
         [Required,
-         ExcelColumn("BN"),
+         ExcelColumn("AY"),
          SqlParameter("crushed_stone")]
         public bool CrushedStone
         {
@@ -131,22 +92,34 @@ namespace DesignDataImporter.Model
             get; set;
         }
         [Required,
-         ExcelColumn("BY"),
+         ExcelColumn("BJ"),
          SqlParameter("ocr_comments")]
         public string OCRComment
         {
             get; set;
         }
 
+        [Required, SqlParameter("started_day"), ExcelColumn("AF")]
+        public DateTime? StartDate
+        {
+            get;
+            set;
+        }
+        [Required, SqlParameter("finished_day"), ExcelColumn("AG")]
+        public DateTime? FinishedDay
+        {
+            get;
+            set;
+        }
         [Required,
-        ExcelColumn("CB"),
+        ExcelColumn("BM"),
         SqlParameter("fem_analysic")]
         public bool FEMAnalysic
         {
             get; set;
         }
         [Required,
-         ExcelColumn("CF"),
+         ExcelColumn("BQ"),
         SqlParameter("around_situation")]
         public string AroundSituation
         {
@@ -155,7 +128,7 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-        ExcelColumn("CG"),
+        ExcelColumn("BR"),
        SqlParameter("has_embankment_plan")]
         public bool HasEmbankmentPlan
         {
@@ -164,7 +137,7 @@ namespace DesignDataImporter.Model
         }
 
         [Required,
-         ExcelColumn("CH"),
+         ExcelColumn("BS"),
          SqlParameter("is_narrow_land_boundary")]
         public bool IsNarrowLandBoundary
         {
@@ -172,7 +145,7 @@ namespace DesignDataImporter.Model
             set;
         }
         [Required,
-        ExcelColumn("CJ"),
+        ExcelColumn("BU"),
         SqlParameter("has_burial_property_below")]
         public bool HasBurialPropertyBelow
         {
@@ -180,7 +153,7 @@ namespace DesignDataImporter.Model
             set;
         }
         [Required,
-         ExcelColumn("CK"),
+         ExcelColumn("BV"),
          SqlParameter("freezer_temperature")]
         public double FreezerTemperature
         {
@@ -188,7 +161,7 @@ namespace DesignDataImporter.Model
             set;
         }
         [Required,
-         ExcelColumn("CI"),
+         ExcelColumn("BT"),
          SqlParameter("is_more_2terms")]
         public bool IsMore2Terms
         {
@@ -196,7 +169,7 @@ namespace DesignDataImporter.Model
             set;
         }
          [Required,
-         ExcelColumn("CM"),
+         ExcelColumn("BX"),
          SqlParameter("is_over_200_think")]
         public bool IsOver200Thick
         {
@@ -204,7 +177,7 @@ namespace DesignDataImporter.Model
             set;
         }
         [Required,
-         ExcelColumn("CL"),
+         ExcelColumn("BW"),
          SqlParameter("is_govemment_construction")]
         public bool IsGrovemmentConstruction
         {
@@ -212,7 +185,7 @@ namespace DesignDataImporter.Model
             set;
         }
         [Required,
-         ExcelColumn("CN"),
+         ExcelColumn("BY"),
          SqlParameter("remark")]
         public string Remark
         {

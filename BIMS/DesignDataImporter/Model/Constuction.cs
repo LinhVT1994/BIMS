@@ -12,8 +12,8 @@ namespace DesignDataImporter.Model
     {
         [PrimaryKey, 
          AutoIncrement, Required,
-         SqlParameter("construction_id"), 
-         ExcelTemporaryStorage("CP")]
+         ExcelColumn("A"),
+         SqlParameter("construction_id")]
         public int ConstructionId
         {
             get;
@@ -22,39 +22,73 @@ namespace DesignDataImporter.Model
         [Required, 
          Unique, 
          SqlParameter("construction_no"),  
-         ExcelColumn("A")]
+         ExcelColumn("B")]
         public string ConstructionNo
         {
             get;
             set;
         }
 
-        [Required, SqlParameter("started_day"), ExcelColumn("E")]
+        [Required, SqlParameter("started_day"), ExcelColumn("C")]
         public DateTime StartDate
         {
             get;
             set;
         }
-        [Required, SqlParameter("finished_day"), ExcelColumn("F")]
+        [Required, SqlParameter("finished_day"), ExcelColumn("D")]
         public DateTime FinishedDay
         {
             get;
             set;
         }
-        [Required, SqlParameter("name"), ExcelColumn("C")]
-        public string Name
-        {
-            get;
-            set;
-        }
-        [Required, SqlParameter("status")]
+        [Required, SqlParameter("status"), ExcelColumn("E")]
         public int Status
         {
             get;
             set;
         }
-        [Required, SqlParameter("position_id"), ExcelColumn("CO")]
+        [Required, SqlParameter("name"), ExcelColumn("F")]
+        public string Name
+        {
+            get;
+            set;
+        }
+        [Required, SqlParameter("area"), ExcelColumn("L")]
+        public double Area
+        {
+            get;
+            set;
+        }
+        [Required, SqlParameter("price"), ExcelColumn("M")]
+        public double Price
+        {
+            get;
+            set;
+        }
+        [Required, SqlParameter("position_id"), ExcelColumn("G")]
         public int PositionId
+        {
+            get;
+            set;
+        }
+
+        [Required,
+        ExcelColumn("I"),
+        SqlParameter("structure_type_id")]
+        public int StructureTypeId { get; set; }
+
+        [Required,
+         ExcelColumn("J"),
+         SqlParameter("scale_id")]
+        public int ScaleId
+        {
+            get;
+            set;
+        }
+        [Required,
+         ExcelColumn("H"),
+         SqlParameter("purpose_id")]
+        public int PurposeId
         {
             get;
             set;

@@ -30,9 +30,15 @@ namespace DataUtilities.DataProcessing
         private int _StartRowInExcel = 1;
         public int EndAtLine
         {
-            get;
-            set;
-        } = -1;
+            get
+            {
+                return _NumbOfRows;
+            }
+            set
+            {
+                _NumbOfRows = value;
+            }
+        }
         private string connectionString = null;
         public int StartRowInExcel
         {
@@ -61,7 +67,11 @@ namespace DataUtilities.DataProcessing
                 _XlworkSheet = (Microsoft.Office.Interop.Excel.Worksheet)_XlWorkBook.Sheets[1];
                 _XlworkSheet.Unprotect();
                 _XlRange = _XlworkSheet.UsedRange;
-                _NumbOfRows = _XlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Row;
+                if (_NumbOfRows == 0)
+                {
+                    _NumbOfRows = _XlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Row;
+                }
+                
                 _NumbOfColumns = _XlRange.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell).Column;
             }
             catch (Exception)
@@ -278,13 +288,44 @@ namespace DataUtilities.DataProcessing
                     if (!dicResult.ContainsKey(key))
                     {
                         dicResult.Add(key, newObj);
-                        RequestToSql<T>(newObj);
+                        RequestInsertToSql<T>(newObj);
                     }
                 }
             }
             CloseExcelFile();
         }
+        public void GetRowData<T>(Action<T> action)
+        {
+            try
+            {
+                // get properties what need to get value from an excel file.
+                List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+                if (propertyNames.Count == 0)
+                {
+                    throw new Exception("Don't have any required property.");
+                }
+                for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+                {
+                    // create new object of the genneric object.
+                    T newObj = (T)Activator.CreateInstance(typeof(T));
+                    foreach (string pName in propertyNames)
+                    {
+                        PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                    action?.Invoke(newObj);
+                }
+            }
+            catch (Exception e)
+            {
 
+                throw e;
+            }
+            finally
+            {
+                CloseExcelFile();
+            }
+        }
         public List<T> ExecuteDataGetting<T>(Action<T, object[]> getDataMethod, Predicate<T> CheckData)
         {
             List<T> listData = new List<T>();
@@ -485,7 +526,7 @@ namespace DataUtilities.DataProcessing
                         if ((validatedResult==null?false:(bool)validatedResult))
                         {
                            
-                            RequestToSql<T>(obj);
+                            RequestInsertToSql<T>(obj);
                         }
                         
                     }
@@ -726,7 +767,7 @@ namespace DataUtilities.DataProcessing
                                 continue;
                             }
                             newObj = preProcessingProceduce.Invoke(newObj);
-                            RequestToSql<T>(newObj);
+                            RequestInsertToSql<T>(newObj);
                             var dataTable = GetLastElement<T>();
                             Type type = typeof(T);
                             var listSaveProperties = ExcelTemporaryStorageAttribute.GetExcelTemporaryStoragePropertiesName(type);
@@ -835,15 +876,198 @@ namespace DataUtilities.DataProcessing
                     var result = CheckExistOnDB(newObj);
                     if (!result)
                     {
-                        RequestToSql<T>(newObj);
+                        RequestInsertToSql<T>(newObj);
                     }
                    
                 }
             }
             CloseExcelFile();
         }
+        public void UploadExcelFromDB<T>()
+        {
+            bool hasALeastOneUnique = true;
+            // the properties what need to get value from a excel file.
+            List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+            if (propertyNames.Count == 0)
+            {
+                throw new Exception("Don't have any required property.");
+            }
+            // the list of properties what required to have to has a value is unique. 
+            List<string> uniqueProperties = GetUniqueProperties(typeof(T));
 
+            if (GetUniqueProperties(typeof(T)).Count <= 0)
+            {
+                hasALeastOneUnique = false;
+            }
+            Dictionary<string, T> dicResult = new Dictionary<string, T>();
+            for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+            {
+                // create new object of the genneric object.
+                T newObj = (T)Activator.CreateInstance(typeof(T));
+                string key = null;
+                foreach (string pName in propertyNames)
+                {
+                    PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                    if (IsPrimaryKey(typeof(T), pName)) // is primany key.
+                    {
+                        if (IsAutoIncrement(typeof(T), pName))
+                        {
+                            if (!hasALeastOneUnique)
+                            {
+                                key = (dicResult.Count + 1).ToString();
+                            }
+                            propertyInfo.SetValue(newObj, dicResult.Count + 1);
+                        }
+                    }
+                    else if (IsUnique(typeof(T), pName))
+                    {
+                        try
+                        {
+                            string columnName = null;
+                            key = HandleForUniqueKey(newObj, pName, row, out columnName);
+                            if (string.IsNullOrWhiteSpace(key))
+                            {
+                                string message = string.Format("Error at: Cell[{0},{1}] Handled: {2} Message: {3}", row, columnName, "Ignore", "Can't get value on this cell.");
+                                SetErrorInfoMarkForRow(row);
+                                break;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                    }
+                    else if (IsForeignKey(typeof(T), pName)) // is foreign key.
+                    {
+                        //　get the table and property what referenced to.
+                        if (!HandleForForeignKey<T>(newObj, pName, row))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                }
+                // if the key has not setted any value then ignore it.
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    //
+                    continue;
+                }
+                else
+                {
+                    var result = GetDataFromDB(newObj);
+                    if (result != null)
+                    {
+                        Type type = typeof(T);
+                        var listSaveProperties = ExcelTemporaryStorageAttribute.GetExcelTemporaryStoragePropertiesName(type);
+                        if (listSaveProperties != null && listSaveProperties.Count > 0)
+                        {
+                            foreach (var property in listSaveProperties)
+                            {
+                                string sqlColumn = SqlParameterAttribute.GetNameOfParameterInSql(type, property);
+                                var data = result.GetElementAt(0).Value(sqlColumn);
+                                string column = ExcelTemporaryStorageAttribute.GetExcelTemporaryStorageColumn(type, property);
+                                SetValueInCell(row, column, data);
+                            }
+                        }
+                    }
+                  
 
+                }
+            }
+            CloseExcelFile();
+        }
+        public void Update<T>(Predicate<T> validate,
+                         Func<T, T> preProcessingProceduce = null)
+        {
+            // the properties what need to get value from a excel file.
+            List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+            if (propertyNames.Count == 0)
+            {
+                throw new Exception("Don't have any required property.");
+            }
+            // the list of properties what required to have to has a value is unique. 
+            List<string> uniqueProperties = GetUniqueProperties(typeof(T));
+            Dictionary<string, T> dicResult = new Dictionary<string, T>();
+            for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+            {
+                // create new object of the genneric object.
+                T newObj = (T)Activator.CreateInstance(typeof(T));
+                foreach (string pName in propertyNames)
+                {
+                    PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                   if (IsForeignKey(typeof(T), pName)) // is foreign key.
+                    {
+                        //　get the table and property what referenced to.
+                        if (!HandleForForeignKey<T>(newObj, pName, row))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                }
+                // if the key has not setted any value then ignore it.
+                bool? validated = validate?.Invoke(newObj);
+                if (validated == null || validated == false)
+                {
+                    continue;
+                }
+                newObj = preProcessingProceduce.Invoke(newObj);
+
+                var result = CheckExistOnDB(newObj);
+                if (result)
+                {
+                    RequestUpdateToSql<T>(newObj);
+                }
+            }
+            CloseExcelFile();
+        }
+
+        public void UpdateByPrimaryKey<T>(Predicate<T> validate)
+        {
+            // the properties what need to get value from a excel file.
+            List<string> propertyNames = RequiredAttribute.GetRequiredPropertiesName(typeof(T));
+            if (propertyNames.Count == 0)
+            {
+                throw new Exception("Don't have any required property.");
+            }
+            // the list of properties what required to have to has a value is unique. 
+            List<string> uniqueProperties = GetUniqueProperties(typeof(T));
+            Dictionary<string, T> dicResult = new Dictionary<string, T>();
+            for (int row = _StartRowInExcel; row < _NumbOfRows; row++)
+            {
+                // create new object of the genneric object.
+                T newObj = (T)Activator.CreateInstance(typeof(T));
+                foreach (string pName in propertyNames)
+                {
+                    PropertyInfo propertyInfo = newObj.GetType().GetProperty(pName);
+                    if (IsForeignKey(typeof(T), pName)) // is foreign key.
+                    {
+                        //　get the table and property what referenced to.
+                        if (!HandleForForeignKey<T>(newObj, pName, row))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        HandleForRequiredProperty(newObj, pName, row);
+                    }
+                }
+                if (validate.Invoke(newObj))
+                {
+                    RequestUpdateToSql<T>(newObj);
+                }
+                
+            }
+            CloseExcelFile();
+        }
         public DataTable GetLastElement<T>()
         {
             var typeObject = typeof(T);
@@ -895,6 +1119,43 @@ namespace DataUtilities.DataProcessing
                 return false;
             }
             return true;
+        }
+        public DataTable GetDataFromDB<T>(T obj)
+        {
+            var typeObject = typeof(T);
+            var properties = GetUniqueProperties(typeof(T));
+            if (properties == null || properties.Count() <= 0)
+            {
+                return null;
+            }
+
+            string tableName = (typeObject.GetCustomAttribute(typeof(SqlParameterAttribute), false) as SqlParameterAttribute).PropertyName;
+            StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.AppendFormat("select * from {0} where ", tableName);
+            foreach (var str in properties)
+            {
+                var propertyInfo = typeObject.GetProperty(str);
+                string sqlCol = SqlParameterAttribute.GetNameOfParameterInSql(typeObject, str);
+                var value = propertyInfo.GetValue(obj);
+                if (propertyInfo.PropertyType == typeof(string))
+                {
+                    queryBuilder.AppendFormat("{0} = '{1}' and ", sqlCol, value);
+                }
+                else if (propertyInfo.PropertyType == typeof(int))
+                {
+                    queryBuilder.AppendFormat("{0} = '{1}' and ", sqlCol, (int)value);
+                }
+
+            }
+            string query = queryBuilder.ToString();
+            query = query.Remove(query.Length - 5, 5);
+            SqlDataAccess access = new SqlDataAccess(connectionString);
+            var data = access.ExecuteSelectMultiTables(query, null);
+            if (data == null || data.Count <= 0)
+            {
+                return null;
+            }
+            return data;
         }
         public bool ExecuteMultiRecords<T>(Predicate<T> validate,Action<T> preProcessingProceduce = null)
         {
@@ -993,7 +1254,7 @@ namespace DataUtilities.DataProcessing
                                 preProcessingProceduce?.Invoke(obj);
                             }
 
-                            RequestToSql<T>(obj);
+                            RequestInsertToSql<T>(obj);
                         }
                         catch (Exception e)
                         {
@@ -1557,7 +1818,7 @@ namespace DataUtilities.DataProcessing
         /// <typeparam name="T">the type of Element.</typeparam>
         /// <param name="parseTo">The object needs to insert to the sql server.</param>
         /// <returns>The numbers was effected in sql server.</returns>
-        private int RequestToSql<T>(T parseTo)
+        private int RequestInsertToSql<T>(T parseTo)
         {
             List<string> requiredProperties = RequiredAttribute.GetRequiredPropertiesName(parseTo.GetType());
             string table = typeof(T).GetAttributeValue((SqlParameterAttribute dna) => dna.PropertyName);
@@ -1571,6 +1832,10 @@ namespace DataUtilities.DataProcessing
                 else
                 {
                     string paramName = SqlParameterAttribute.GetNameOfParameterInSql(parseTo.GetType(), property);
+                    if (string.IsNullOrWhiteSpace(paramName))
+                    {
+                        continue;
+                    }
                     PropertyInfo propertyInfo = parseTo.GetType().GetProperty(property);
                     object result = propertyInfo.GetValue(parseTo);
                     if (result != null)
@@ -1580,9 +1845,13 @@ namespace DataUtilities.DataProcessing
                         {
                             parameters.Add(new SqlParameter(paramName, paramValue));
                         }
-                        else if (propertyInfo.PropertyType == typeof(int))
+                        else if (propertyInfo.PropertyType == typeof(int) || propertyInfo.PropertyType == typeof(int?))
                         {
-                            parameters.Add(new SqlParameter(paramName, paramValue));
+                            if (paramValue != null)
+                            {
+                                parameters.Add(new SqlParameter(paramName, paramValue));
+                            }
+                          
                         }
                         else if (propertyInfo.PropertyType == typeof(double))
                         {
@@ -1627,7 +1896,87 @@ namespace DataUtilities.DataProcessing
             }
             return CreateInsertQuery(table, parameters);
         }
+        private int RequestUpdateToSql<T>(T parseTo)
+        {
+            List<string> requiredProperties = RequiredAttribute.GetRequiredPropertiesName(parseTo.GetType());
+            string table = typeof(T).GetAttributeValue((SqlParameterAttribute dna) => dna.PropertyName);
+            List<SqlParameter> parameters = new List<SqlParameter>();
+            foreach (string property in requiredProperties)
+            {
+                if (IsAutoIncrement(typeof(T), property))
+                {
 
+                }
+                else
+                {
+                    string paramName = SqlParameterAttribute.GetNameOfParameterInSql(parseTo.GetType(), property);
+                    if (string.IsNullOrWhiteSpace(paramName))
+                    {
+                        continue;
+                    }
+                    PropertyInfo propertyInfo = parseTo.GetType().GetProperty(property);
+                    object result = propertyInfo.GetValue(parseTo);
+                    if (result != null)
+                    {
+                        object paramValue = propertyInfo.GetValue(parseTo);
+                        if (propertyInfo.PropertyType == typeof(string))
+                        {
+                            parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(int)|| propertyInfo.PropertyType == typeof(int?))
+                        {
+                            if (paramValue == null)
+                            {
+                                continue;
+                            }
+                            parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(double))
+                        {
+                            parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(bool))
+                        {
+                            parameters.Add(new SqlParameter(paramName, paramValue));
+                        }
+                        else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
+                        {
+                            if ((DateTime)result == default(DateTime))
+                            {
+                                parameters.Add(new SqlParameter(paramName, null));
+                            }
+                            else
+                            {
+                                DateTime dt;
+                                DateTime.TryParse(result.ToString(), out dt);
+
+                                parameters.Add(new SqlParameter(paramName, dt));
+                            }
+
+                        }
+                        else if (propertyInfo.PropertyType.BaseType == typeof(Element))
+                        {
+                            string refId = ForeignKeyAttribute.GetRefId(typeof(T), property);
+                            object data = GetPrimaryKeyValue(paramValue);
+                            if (data == null || ((int)data) <= 0)
+                            {
+                                return -1;
+                            }
+                            parameters.Add(new SqlParameter(paramName, data));
+                        }
+                        else
+                        {
+                            throw new Exception("Code hasnot implemented");
+                        }
+                    }
+                }
+
+            }
+            var primaryKeyP = GetPrimaryKey(parseTo.GetType());
+            var key = GetNameOfParameterInSql(parseTo.GetType(), primaryKeyP.Name);
+            var val = primaryKeyP.GetValue(parseTo);
+            return CreateUpdateQuery(table, key, (int)val, parameters);
+        }
         public string CreateSelectQuery()
         {
             StringBuilder sqlQuery = new StringBuilder();
@@ -1670,6 +2019,25 @@ namespace DataUtilities.DataProcessing
             StringBuilder sqlQuery = new StringBuilder();
 
             sqlQuery.AppendFormat("insert into {0}{1} values({2})", table, sPropertyNames, sValues);
+
+            SqlDataAccess sqlDataAccess = new SqlDataAccess(connectionString);
+            return sqlDataAccess.ExecuteInsertOrUpdateQuery(sqlQuery.ToString(), sqlParams.ToArray());
+        }
+        public int CreateUpdateQuery(string table, string key, int keyVal, List<SqlParameter> sqlParams)
+        {
+            if (sqlParams.Count <= 0)
+            {
+                return -1;
+            }
+            string sValues = null;
+            foreach (SqlParameter para in sqlParams)
+            {
+                sValues += para.ParameterName + "=@" + para.ParameterName + ",";
+            }
+            sValues = sValues.Remove(sValues.Length - 1);
+            string whereStatement = $"{key} = {keyVal}";
+            StringBuilder sqlQuery = new StringBuilder();
+            sqlQuery.AppendFormat("update {0} set {1} where {2}", table, sValues, whereStatement);
 
             SqlDataAccess sqlDataAccess = new SqlDataAccess(connectionString);
             return sqlDataAccess.ExecuteInsertOrUpdateQuery(sqlQuery.ToString(), sqlParams.ToArray());

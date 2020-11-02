@@ -4,14 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6791EBE8-6250-442C-AB84-8ACEFFC1C73C}</ProjectGuid>
+    <ProjectGuid>{89E0444A-84AB-408B-B24B-469EDD0CEBAC}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DesignDataImporter</RootNamespace>
-    <AssemblyName>DesignDataImporter</AssemblyName>
+    <RootNamespace>GetPartyDataFromDesignData</RootNamespace>
+    <AssemblyName>GetPartyDataFromDesignData</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -44,31 +45,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Utilities">
-      <HintPath>..\..\..\..\LinhVT\TNFIMSSupporter\TNFIMSSupporter\Utilities\bin\Debug\Utilities.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\AdditionalConstruction.cs" />
-    <Compile Include="Model\ConDesign.cs" />
-    <Compile Include="Model\ConModel.cs" />
-    <Compile Include="Model\ConstructionDetailModel.cs" />
-    <Compile Include="Model\Constuction.cs" />
-    <Compile Include="Model\CooperatingOnDesign.cs" />
-    <Compile Include="Model\DesignData.cs" />
-    <Compile Include="Model\DesignPerson.cs" />
-    <Compile Include="Model\DesignRoute.cs" />
-    <Compile Include="Model\GroundImprovementModel.cs" />
-    <Compile Include="Model\JapanRegion.cs" />
-    <Compile Include="Model\PartyModel.cs" />
-    <Compile Include="Model\Position.cs" />
-    <Compile Include="Model\PurposeModel.cs" />
-    <Compile Include="Model\RoofTop.cs" />
-    <Compile Include="Model\ScaleModel.cs" />
-    <Compile Include="Model\StatementModel.cs" />
-    <Compile Include="Model\StructureType.cs" />
-    <Compile Include="Model\SuperStructureModel.cs" />
-    <Compile Include="Model\UsingTechnique.cs" />
+    <Compile Include="CompanyArr.cs" />
+    <Compile Include="CompanyData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -76,7 +56,33 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Model\NewFolder1\" />
+    <COMReference Include="Microsoft.Office.Core">
+      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>8</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Excel">
+      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>9</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="VBIDE">
+      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>5</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

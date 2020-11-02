@@ -30,7 +30,7 @@ namespace DesignDataImporter.Model
                 structipeTypeId = value;
             }
         }
-        [Required, Unique,ExcelColumn("AE"),SqlParameter("name")]
+        [Required, Unique, ExcelColumn("X"),SqlParameter("name")]
         public string Name
         {
             get

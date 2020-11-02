@@ -17,7 +17,11 @@ namespace DesignDataImporter.Model
         #endregion
 
         #region Properties
-        [Required, AutoIncrement,PrimaryKey, SqlParameter("design_route_id")]
+        [Required,
+         AutoIncrement,
+         ExcelTemporaryStorage("CA")
+         PrimaryKey,
+         SqlParameter("design_route_id")]
         public int DesignRouteId
         {
             get
@@ -29,7 +33,7 @@ namespace DesignDataImporter.Model
                 designRouteId = value;
             }
         }
-        [Required, Unique, ExcelColumn("AL") ,SqlParameter("name")]
+        [Required, Unique, ExcelColumn("N") ,SqlParameter("name")]
         public string Name
         {
             get

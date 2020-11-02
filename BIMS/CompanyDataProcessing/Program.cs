@@ -14,7 +14,7 @@ namespace CompanyDataProcessing
     class Program
     {
         private static string _Url = @"C:\Users\TUAN-LINH\Desktop\SynchronousProjects\DatabaseResources\postition.xlsx";
-        private static string _ConnectStr = @"Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_boring_data";
+        private static string _ConnectStr = @"Host=localhost;Port=5432;Username=postgres;Password=vutuanlinh;Database=db_tnfims";
         static void Main(string[] args)
         {
 

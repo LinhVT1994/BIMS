@@ -30,7 +30,7 @@ namespace DesignDataImporter.Model
                 purposeId = value;
             }
         }
-        [Required, Unique, ExcelColumn("AI"),SqlParameter("name")]
+        [Required, Unique, ExcelColumn("Z"),SqlParameter("name")]
         public string Name
         {
             get

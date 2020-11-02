@@ -30,7 +30,7 @@ namespace DesignDataImporter.Model
                 scaleId = value;
             }
         }
-        [Required, Unique, ExcelColumn("AG"), SqlParameter("name")]
+        [Required, Unique, ExcelColumn("Y"), SqlParameter("name")]
         public string Name
         {
             get

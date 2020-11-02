@@ -47,7 +47,11 @@ namespace DataUtilities.Attributes
                     }
                     else
                     {
-                        propertyInfo.SetValue(obj, int.Parse(s));
+                        int val;
+                        if (int.TryParse(s, out val))
+                        {
+                            propertyInfo.SetValue(obj, val);
+                        }
                     }
                 }
                 else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))

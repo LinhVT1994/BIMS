@@ -20,20 +20,24 @@ namespace DesignDataImporter.Model
     [SqlParameter("position")]
     public class Position : Element
     {
-        [SqlParameter("position_id"), PrimaryKey, Required, AutoIncrement, ExcelTemporaryStorage("CO")]
+        [SqlParameter("position_id"), PrimaryKey, Required, AutoIncrement, ExcelTemporaryStorage("BG")]
         public int Id { get; set; }
-        [SqlParameter("name"), Required, ExcelColumn("AB")]
+
+        [Required, ExcelColumn("A")]
+        public string ConstructioNo { get; set; }
+
+        [SqlParameter("name"), Required, ExcelColumn("U")]
         public string Name { get; set; }
 
-        [SqlParameter("latitude"), Required, ExcelColumn("Z")]
+        [SqlParameter("latitude"), Required, ExcelColumn("N")]
         public double Latitude { get; set; }
 
-        [SqlParameter("longitude"), Required, ExcelColumn("AA")]
+        [SqlParameter("longitude"), Required, ExcelColumn("O")]
         public double Longitude { get; set; }
         [Required, 
-         ExcelColumn("G"), 
+         ExcelColumn("L"), 
          SqlParameter("region_id"), 
-         ForeignKey("regions", "regions.zip_code[Y]=>region_id")]
+         ForeignKey("regions", "zip_code[L]=>region_id")]
         public JapanRegion Region
         {
             get;
